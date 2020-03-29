@@ -14,7 +14,13 @@
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-scripts": "3.4.0",
-    "typescript": "^3.8.3"
+    "react-visjs-timeline": "^1.6.0",
+    "typescript": "^3.8.3",
+    "uuid": "^7.0.2",
+    "vis": "^4.21.0-EOL",
+    "vis-data": "^6.5.1",
+    "vis-timeline": "^7.3.4",
+    "vis-util": "^4.0.0"
   },
   "scripts": {
     "start": "react-scripts start",

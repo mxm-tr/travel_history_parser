@@ -17,7 +17,6 @@ import Remove from '@material-ui/icons/Remove';
 import SaveAlt from '@material-ui/icons/SaveAlt';
 import Search from '@material-ui/icons/Search';
 import ViewColumn from '@material-ui/icons/ViewColumn';
-import Modal from '@material-ui/core/Modal';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -26,10 +25,8 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import Snackbar, { SnackbarOrigin } from '@material-ui/core/Snackbar';
+import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 
 import { makeStyles, Theme } from '@material-ui/core/styles';
@@ -37,6 +34,9 @@ import { makeStyles, Theme } from '@material-ui/core/styles';
 import { forwardRef } from 'react';
 
 import './index.css';
+
+import Timeline from 'react-visjs-timeline'
+
 
 const tableIcons = {
     Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -95,12 +95,10 @@ function processRawInput(rawInput, processingFunction='i94'){
             while (parsedOutput.length > 0) {
                 items.push({
                     location: parsedOutput.pop(),
-                    type: parsedOutput.pop(),
-                    date: parsedOutput.pop()
+                    type: parsedOutput.pop() === 'Departure' ? 'DEP' : 'ARR',
+                    date: new Date(parsedOutput.pop())
                 });
             }
-            console.log(items)
-
             return items
         default:
             return []
@@ -111,36 +109,150 @@ class TravelItem extends React.Component {
     constructor(props){
         super(props);
         const params = JSON.parse(props.params)
-        this.state = {
-            dateDeparture: new Date(params.dateDeparture),
-            dateArrival: new Date(params.dateArrival),
-            locationSource: new PortOfEntry(params.locationSourceCode),
-            locationDestination: new PortOfEntry(params.locationDestinationCode),
-        }
     }
-
     tripDuration(count_arrival_day=true){
-        return this.state.dateArrival - this.state.dateDeparture
+        return this.props.dateArrival - this.props.dateDeparture
     }
     render() {return(
-    <p>{this.state.dateDeparture.toString()} {this.state.locationDestination.toString()}</p>
+    <p>{this.props.dateDeparture.toString()} {this.props.locationDestination.toString()}</p>
+    )}
+}
+
+function computeTravelDurationDays(date1, date2){
+    console.log(new Date(date1))
+    return Math.abs((new Date(date1) - new Date(date2)) / 1000 / 3600 / 24 ) + 1
+}
+
+class TravelsList extends React.PureComponent {
+        render() {
+        // http://visjs.org/docs/timeline/#Configuration_Options
+        const timelineOptions = {
+            width: '100%',
+            //height: '160px',
+            stack: true,
+            showMajorLabels: true,
+            //showCurrentTime: true,
+            zoomMin: 1000000,
+            type: 'background',
+            format: {
+                minorLabels: {
+                    minute: 'h:mma',
+                    hour: 'ha'
+                }
+            }
+        }
+        const timelineGroups = [{id: 1, content: 'Inside the US'}, {id: 2, content: 'Outside the US'}, {id: 3, content: 'Checks'}]
+
+        // this.props.data looks like
+        // { location: 'JFK', type: 'DEP' or 'ARR', date: '2020-03-20'
+        // Returns something like
+        // { id: 1, type: "point", title: "loul", content: "Departure from JFK", start: new Date(2013, 5, 20) }
+
+        // Sort the travel check by date
+        let travelChecks = JSON.parse(JSON.stringify(this.props.travelChecks)).sort((a,b) => a.date - b.date).reverse()
+
+        // Set up points to display the checks
+        const travelChecksPoints = travelChecks.map((check, index) => new Object({
+            id: index,
+            type: "point",
+            title: `${check['type']} ${check['location']} : ${check['date']}`,
+            content: `${check['location']} : ${check['date']}`,
+            start: check.date,
+            // group: check['type'] === 'DEP' ? 2 : 1
+            group: 3
+        }))
+
+        // Browse the list, element by element
+        let travels = []
+        let newTravel = {}
+        let checkA, checkB, travelDuration
+        let index = travelChecksPoints.length
+        let message = "Done"
+        while(travelChecks.length > 1){
+            checkA = travelChecks.pop(0)
+            checkB = travelChecks[travelChecks.length - 1]
+
+            travelDuration = computeTravelDurationDays(checkA.date, checkB.date)
+
+            newTravel = new Object({
+                id: index,
+                type: "range",
+                title: `From ${checkA['location']} to ${checkB['location']}: ${travelDuration} days`,
+                content: `From ${checkA['location']} to ${checkB['location']}: ${travelDuration} days`,
+                start: checkA.date,
+                end: checkB.date,
+                duration: travelDuration
+            })
+
+            if (checkA.type === 'DEP' && checkB.type === 'ARR') {
+                index++
+                newTravel['group'] = 2 // Outside
+                travels.push(newTravel)
+            }else if(checkA.type === 'ARR' && checkB.type === 'DEP'){
+                index++
+                newTravel['group'] = 1 // Inside
+                travels.push(newTravel)
+            }else{
+                message = `${message} Error parsing travel checks: travel from ${checkA.location} on ${checkA.date} to ${checkB.location} on ${checkB.date}`
+                message = `${message} should be consecutive Departures and Arrivals`
+            }
+        }
+        const result = travels.concat(travelChecksPoints)
+        console.log(result)
+
+        return (
+        <div>
+            <p>{message}</p>
+            <MaterialTable
+            icons={tableIcons}
+            isEditable={false}
+            columns={[
+                    { title: 'Departure', field: 'start', type: 'date'},
+                    { title: 'Arrival', field: 'end', type: 'date'},
+                    { title: 'Duration', field: 'duration', type: 'number', render: (d) => `${d.duration} days` },
+                    { title: 'In the US?', field: 'group', render: (a) => a.group === 1 ? 'Inside the US' : 'Outside the US' }
+                ]}
+            data={travels}
+            title="Travels list" />
+            <Timeline options={timelineOptions} groups={timelineGroups} items={result}/>
+        </div>
     )}
 }
 
 
-class TravelItemsList extends React.Component {
+class TravelChecksList extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             showModal : false,
-            newPassagesCount: 0,
+            newTravelChecksCount: 0,
             showImportingDataMessage: false,
             showClearAllDialog: false,
             showDataImportedMessage: false,
             showNoDataImportedMessage: false,
-            passages: [],
+            // travelChecks: [],
+            travelChecks: [{
+                "location": "RRA",
+                "type": "ARR",
+                "date": new Date("2017-03-30"),
+            },
+            {
+                "location": "BWI",
+                "type": "DEP",
+                "date": new Date("2017-03-31"),
+            },
+            {
+                "location": "DLA",
+                "type": "ARR",
+                "date": new Date("2017-05-30"),
+            },
+            {
+                "location": "DUL",
+                "type": "DEP",
+                "date": new Date("2017-06-30"),
+            }],
             newRawInput: 'poop',
-            processingFunction: 'i94',
+            processingFunction: 'i94'
         };
         this.handleNewRawInput = this.handleNewRawInput.bind(this);
         this.handleProcessingFunctionChange = this.handleProcessingFunctionChange.bind(this);
@@ -156,12 +268,11 @@ class TravelItemsList extends React.Component {
     }
 
     handleProcessNewRawInput(event){
-        const passages = this.state.passages.slice();
         this.setState({showImportingDataMessage:true})
-        const newPassages = processRawInput(this.state.newRawInput)
-        if (newPassages.length > 0){
+        const newTravelChecks = processRawInput(this.state.newRawInput)
+        if (newTravelChecks.length > 0){
             this.setState({
-                newPassagesCount: newPassages.length,
+                newTravelChecksCount: newTravelChecks.length,
                 showDataImportedMessage: true
             });
         }else{
@@ -169,7 +280,7 @@ class TravelItemsList extends React.Component {
         }
         this.setState(
             {
-                passages: passages.concat(newPassages)
+                travelChecks: this.state.travelChecks.concat(newTravelChecks)
             }
         );
         event.preventDefault();
@@ -189,12 +300,11 @@ class TravelItemsList extends React.Component {
                 <Alert color='info'>Importing Data</Alert>
             </Snackbar>
             <Snackbar open={this.state.showDataImportedMessage} onClose={ () => this.setState({showDataImportedMessage:false}) } autoHideDuration={2000} >
-                <Alert color='success'>{this.state.newPassagesCount} new lines imported !</Alert>
+                <Alert color='success'>{this.state.newTravelChecksCount} new lines imported !</Alert>
             </Snackbar>
             <Snackbar open={this.state.showNoDataImportedMessage} onClose={ () => this.setState({showNoDataImportedMessage:false}) } autoHideDuration={2000} >
                 <Alert color='error'>No data imported</Alert>
             </Snackbar>
-        
         <Button 
             onClick={() => this.setState({showClearAllDialog: true})}
             variant="contained"
@@ -206,7 +316,7 @@ class TravelItemsList extends React.Component {
         <Dialog onClose={() => this.setState({showClearAllDialog: false})} aria-labelledby="simple-dialog-title" open={this.state.showClearAllDialog}>
         <DialogTitle id="simple-dialog-title">Clear all data</DialogTitle>
         <DialogActions>
-          <Button onClick={() => this.setState({passages: [], showClearAllDialog: false})} color="primary">
+          <Button onClick={() => this.setState({travelChecks: [], showClearAllDialog: false})} color="primary">
             Delete all
           </Button>
           <Button onClick={() => this.setState({showClearAllDialog: false})} color="primary" autoFocus>
@@ -214,7 +324,6 @@ class TravelItemsList extends React.Component {
           </Button>
         </DialogActions>
         </Dialog>
-
         <Button 
             onClick={this.showModalHandler}
             variant="contained"
@@ -230,7 +339,6 @@ class TravelItemsList extends React.Component {
             Copy and paste raw data
           </DialogContentText>
             <form onSubmit={this.handleProcessNewRawInput} >
-
                 <TextField
                     autoFocus
                     margin="dense"
@@ -252,7 +360,6 @@ class TravelItemsList extends React.Component {
                 </form>
         </DialogContent>
         <DialogActions>
-
         </DialogActions>
       </Dialog>
         <MaterialTable
@@ -260,16 +367,16 @@ class TravelItemsList extends React.Component {
             columns={[
                     { title: 'Date', field: 'date', type: 'date'},
                     { title: 'Location', field: 'location' },
-                    { title: 'Type', field: 'type' }
+                    { title: 'Type', field: 'type', lookup:{'DEP': 'Departure', 'ARR': 'Arrival'} }
                 ]}
-            data={this.state.passages}
+            data={this.state.travelChecks}
             title={this.props.name}
             editable={{
                 onRowAdd: newData =>
                     new Promise((resolve, reject) => {
                     setTimeout(() => {
                         {
-                            const data = this.state.passages;
+                            const data = this.state.travelChecks;
                             data.push(newData);
                             this.setState({ data }, () => resolve());
                         }
@@ -280,7 +387,7 @@ class TravelItemsList extends React.Component {
                     new Promise((resolve, reject) => {
                     setTimeout(() => {
                         {
-                            const data = this.state.passages;
+                            const data = this.state.travelChecks;
                             const index = data.indexOf(oldData);
                             data[index] = newData;                
                             this.setState({ data }, () => resolve());
@@ -292,7 +399,7 @@ class TravelItemsList extends React.Component {
                 new Promise((resolve, reject) => {
                     setTimeout(() => {
                         {
-                            let data = this.state.passages;
+                            let data = this.state.travelChecks;
                             const index = data.indexOf(oldData);
                             data.splice(index, 1);
                             this.setState({ data }, () => resolve());
@@ -301,6 +408,8 @@ class TravelItemsList extends React.Component {
                     }, 1000);
                 })
         }}/>
+        <TravelsList travelChecks={this.state.travelChecks} />
+
         </div>
       );
     }
@@ -311,7 +420,7 @@ class TravelItemsList extends React.Component {
 
 ReactDOM.render(
     <div>
-        <TravelItemsList name="Travel checks list"/>
+        <TravelChecksList name="Travel checks list"/>
     </div>,
     document.getElementById('root')
   );
