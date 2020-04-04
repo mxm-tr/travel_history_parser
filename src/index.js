@@ -28,6 +28,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
+import Grid from '@material-ui/core/Grid';
 
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
@@ -128,9 +129,58 @@ function computeTravelDurationDays(date1, date2){
     return Math.abs((new Date(date1) - new Date(date2)) / 1000 / 3600 / 24 ) + 1
 }
 
-class TravelsList extends React.PureComponent {
-        render() {
-        // http://visjs.org/docs/timeline/#Configuration_Options
+function travelChecksToTravelsList(travelChecks){
+    // travelChecks looks like
+    // { location: 'JFK', type: 'DEP' or 'ARR', date: '2020-03-20'
+    // Returns something like
+    // { id: 1, type: "point", title: "loul", content: "Departure from JFK", start: new Date(2013, 5, 20) }
+
+    // Sort the travel check by date
+    let newTravelChecks = JSON.parse(JSON.stringify(travelChecks)).sort((a,b) => a.date - b.date).reverse()
+
+    // Browse the list, element by element
+    let travels = []
+    let newTravel = {}
+    let checkA, checkB, travelDuration
+    let index = 0
+    let message = "Done"
+    while(newTravelChecks.length > 1){
+        checkA = newTravelChecks.pop(0)
+        checkB = newTravelChecks[newTravelChecks.length - 1]
+
+        travelDuration = computeTravelDurationDays(checkA.date, checkB.date)
+
+        newTravel = new Object({
+            id: index,
+            type: "range",
+            title: `From ${checkA['location']} to ${checkB['location']}: ${travelDuration} days`,
+            content: `From ${checkA['location']} to ${checkB['location']}: ${travelDuration} days`,
+            start: checkA.date,
+            end: checkB.date,
+            duration: travelDuration
+        })
+
+        if (checkA.type === 'DEP' && checkB.type === 'ARR') {
+            index++
+            newTravel['group'] = 2 // Outside
+            travels.push(newTravel)
+        }else if(checkA.type === 'ARR' && checkB.type === 'DEP'){
+            index++
+            newTravel['group'] = 1 // Inside
+            travels.push(newTravel)
+        }else{
+            message = `${message} Error parsing travel checks: travel from ${checkA.location} on ${checkA.date} to ${checkB.location} on ${checkB.date}`
+            message = `${message} should be consecutive Departures and Arrivals`
+        }
+    }
+
+    return new Object({travels: travels, message: message})
+
+}
+
+class TravelsTimeline extends React.PureComponent {
+    // http://visjs.org/docs/timeline/#Configuration_Options
+    render(){
         const timelineOptions = {
             width: '100%',
             //height: '160px',
@@ -147,26 +197,17 @@ class TravelsList extends React.PureComponent {
             }
         }
         const timelineGroups = [{id: 1, content: 'Inside the US'}, {id: 2, content: 'Outside the US'}, {id: 3, content: 'Checks'}]
-
-        // this.props.data looks like
-        // { location: 'JFK', type: 'DEP' or 'ARR', date: '2020-03-20'
-        // Returns something like
-        // { id: 1, type: "point", title: "loul", content: "Departure from JFK", start: new Date(2013, 5, 20) }
-
-        // Sort the travel check by date
-        let travelChecks = JSON.parse(JSON.stringify(this.props.travelChecks)).sort((a,b) => a.date - b.date).reverse()
-
         // Set up the time window background
         const timeWindowBackground = new Object({
-            id: 0,
+            id: this.props.travels.length + 1,
             type: "background",
             start: this.props.dateWindowStart,
             end: this.props.dateWindowStop
         })
 
         // Set up points to display the checks
-        const travelChecksPoints = travelChecks.map((check, index) => new Object({
-            id: index + 1,
+        const travelChecksPoints = this.props.travelChecks.map((check, index) => new Object({
+            id: this.props.travels.length + index + 2,
             type: "point",
             title: `${check['type']} ${check['location']} : ${new Intl.DateTimeFormat("en-US").format(new Date(check['date']))}`,
             content: `${check['location']} : ${new Intl.DateTimeFormat("en-US").format(new Date(check['date']))}`,
@@ -174,60 +215,35 @@ class TravelsList extends React.PureComponent {
             // group: check['type'] === 'DEP' ? 2 : 1
             group: 3
         }))
-
-        // Browse the list, element by element
-        let travels = []
-        let newTravel = {}
-        let checkA, checkB, travelDuration
-        let index = travelChecksPoints.length + 1
-        let message = "Done"
-        while(travelChecks.length > 1){
-            checkA = travelChecks.pop(0)
-            checkB = travelChecks[travelChecks.length - 1]
-
-            travelDuration = computeTravelDurationDays(checkA.date, checkB.date)
-
-            newTravel = new Object({
-                id: index,
-                type: "range",
-                title: `From ${checkA['location']} to ${checkB['location']}: ${travelDuration} days`,
-                content: `From ${checkA['location']} to ${checkB['location']}: ${travelDuration} days`,
-                start: checkA.date,
-                end: checkB.date,
-                duration: travelDuration
-            })
-
-            if (checkA.type === 'DEP' && checkB.type === 'ARR') {
-                index++
-                newTravel['group'] = 2 // Outside
-                travels.push(newTravel)
-            }else if(checkA.type === 'ARR' && checkB.type === 'DEP'){
-                index++
-                newTravel['group'] = 1 // Inside
-                travels.push(newTravel)
-            }else{
-                message = `${message} Error parsing travel checks: travel from ${checkA.location} on ${checkA.date} to ${checkB.location} on ${checkB.date}`
-                message = `${message} should be consecutive Departures and Arrivals`
-            }
-        }
-        const result = travels.concat(travelChecksPoints).concat(timeWindowBackground)
-
         return (
-        <div>
-            <p>{message}</p>
+        <Grid item xs={12}>
+            <Timeline options={timelineOptions} groups={timelineGroups} items={this.props.travels.concat(travelChecksPoints).concat(timeWindowBackground)}/>
+        </Grid>
+        )
+    }
+}
+
+class TravelsList extends React.PureComponent {
+    render() {
+        return (
+        <Grid item xs={4}>
             <MaterialTable
-            icons={tableIcons}
-            isEditable={false}
-            columns={[
-                    { title: 'Departure', field: 'start', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.start))},
-                    { title: 'Arrival', field: 'end', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.end))},
-                    { title: 'Duration', field: 'duration', type: 'numeric', render: (d) => `${d.duration} days` },
-                    { title: 'In the US?', field: 'group', render: (a) => a.group === 1 ? 'Inside the US' : 'Outside the US' }
-                ]}
-            data={travels}
-            title="Travels list" />
-            <Timeline options={timelineOptions} groups={timelineGroups} items={result}/>
-        </div>
+                icons={tableIcons}
+                isEditable={false}
+                options={
+                    {
+                        search: false
+                    }
+                }
+                columns={[
+                        { title: 'Departure', field: 'start', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.start))},
+                        { title: 'Arrival', field: 'end', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.end))},
+                        { title: 'Duration', field: 'duration', type: 'numeric', render: (d) => `${d.duration} days` },
+                        { title: 'In the US?', field: 'group', render: (a) => a.group === 1 ? 'Inside the US' : 'Outside the US' }
+                    ]}
+                data={this.props.travels}
+                title="Travels list" />
+        </Grid>
     )}
 }
 
@@ -386,71 +402,81 @@ class TravelChecksList extends React.Component {
         <DialogActions>
         </DialogActions>
       </Dialog>
-        <MaterialTable
-            icons={tableIcons}
-            columns={[
-                    { title: 'Date', field: 'date', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.date))},
-                    { title: 'Location', field: 'location' },
-                    { title: 'Type', field: 'type', lookup:{'DEP': 'Departure', 'ARR': 'Arrival'} }
-                ]}
-            data={this.state.travelChecks}
-            title={this.props.name}
-            editable={{
-                onRowAdd: newData =>
+      <Grid container spacing={3} direction="row" justify="center" alignItems="center">
+        <Grid item xs={6}>
+            <MaterialTable
+                icons={tableIcons}
+                columns={[
+                        { title: 'Date', field: 'date', type: 'date',  filtering: false, render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.date))},
+                        { title: 'Location', field: 'location', filtering: false },
+                        { title: 'Type', field: 'type', lookup:{'DEP': 'Departure', 'ARR': 'Arrival'} }
+                    ]}
+                data={this.state.travelChecks}
+                title={this.props.name}
+                options={{searchFieldAlignment: 'left', filtering: true}}
+                editable={{
+                    onRowAdd: newData =>
+                        new Promise((resolve, reject) => {
+                        setTimeout(() => {
+                            {
+                                this.updateTravelChecks(this.state.travelChecks.concat(newData));
+                            }
+                            resolve();
+                        }, 1000);
+                    }),
+                    onRowUpdate: (newData, oldData) =>
+                        new Promise((resolve, reject) => {
+                        setTimeout(() => {
+                            {
+                                const newTravelChecks = this.state.travelChecks.concat();
+                                const index = newTravelChecks.indexOf(oldData);
+                                newTravelChecks[index] = newData;                
+                                this.updateTravelChecks(newTravelChecks);
+                            }
+                            resolve();
+                        }, 1000);
+                    }),
+                onRowDelete: oldData =>
                     new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                        {
-                            this.updateTravelChecks(this.state.travelChecks.concat(newData));
-                        }
-                        resolve();
-                    }, 1000);
-                }),
-                onRowUpdate: (newData, oldData) =>
-                    new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                        {
-                            const newTravelChecks = this.state.travelChecks.concat();
-                            const index = newTravelChecks.indexOf(oldData);
-                            newTravelChecks[index] = newData;                
-                            this.updateTravelChecks(newTravelChecks);
-                        }
-                        resolve();
-                    }, 1000);
-                }),
-            onRowDelete: oldData =>
-                new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                        {
-                            let newTravelChecks = this.state.travelChecks.concat();
-                            const index = newTravelChecks.indexOf(oldData);
-                            newTravelChecks.splice(index, 1);
-                            this.updateTravelChecks(newTravelChecks);
-                        }
-                        resolve();
-                    }, 1000);
-                })
-        }}/>
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <Fragment>
-                <KeyboardDatePicker
+                        setTimeout(() => {
+                            {
+                                let newTravelChecks = this.state.travelChecks.concat();
+                                const index = newTravelChecks.indexOf(oldData);
+                                newTravelChecks.splice(index, 1);
+                                this.updateTravelChecks(newTravelChecks);
+                            }
+                            resolve();
+                        }, 1000);
+                    })
+            }}/>
+        </Grid>
+        <TravelsList travels={travelChecksToTravelsList(this.state.travelChecks)['travels']} dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
+        <Grid item xs={2}>
+            <h2>Date window</h2>
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                <p>From</p><KeyboardDatePicker
                     variant="dialog"
                     id="dateWindowStart"
                     format="MM/dd/yyyy"
                     value={this.state.dateWindowStart}
                     onChange={(newD) => this.setState({dateWindowStart: newD}) }
                 />
-                <KeyboardDatePicker
+                <p>To</p><KeyboardDatePicker
                     variant="dialog"
                     id="dateWindowStop"
                     format="MM/dd/yyyy"
                     value={this.state.dateWindowStop}
                     onChange={(newD) => this.setState({dateWindowStop: newD}) }
                 />
-            </Fragment>
-        </MuiPickersUtilsProvider>
-        <TravelsList travelChecks={this.state.travelChecks} dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
-        </div>
-      );
+                <p>Total days inside the US</p>
+                <p>Total days outside the US</p>
+            </MuiPickersUtilsProvider>
+        </Grid>
+        <TravelsTimeline travels={travelChecksToTravelsList(this.state.travelChecks)['travels']} travelChecks={this.state.travelChecks} dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
+
+    </Grid>
+    </div>
+    );
     }
   }
   
