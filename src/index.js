@@ -125,11 +125,18 @@ class TravelItem extends React.Component {
     )}
 }
 
-function computeTravelDurationDays(date1, date2){
-    return Math.abs((new Date(date1) - new Date(date2)) / 1000 / 3600 / 24 ) + 1
+function computeTravelDurationDays(dateStart, dateStop, dateWindowStart, dateWindowStop){
+    if (dateWindowStart === undefined || dateWindowStop === undefined){
+        return Math.floor(Math.abs(new Date(dateStop) - new Date(dateStart)) / 1000 / 3600 / 24) + 1
+    }
+    if(new Date(dateStart) >= new Date(dateWindowStop) || new Date(dateStop) <= new Date(dateWindowStart)){
+        return 0
+    }
+
+    return Math.floor((new Date(Math.min(new Date(dateWindowStop), new Date(dateStop))) - new Date(Math.max(new Date(dateWindowStart), new Date(dateStart)))) / 1000 / 3600 / 24) + 1
 }
 
-function travelChecksToTravelsList(travelChecks){
+function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWindowStop){
     // travelChecks looks like
     // { location: 'JFK', type: 'DEP' or 'ARR', date: '2020-03-20'
     // Returns something like
@@ -141,23 +148,26 @@ function travelChecksToTravelsList(travelChecks){
     // Browse the list, element by element
     let travels = []
     let newTravel = {}
-    let checkA, checkB, travelDuration
+    let checkA, checkB, travelDurationDateWindow, travelDurationNoDateWindow
     let index = 0
     let message = "Done"
     while(newTravelChecks.length > 1){
         checkA = newTravelChecks.pop(0)
         checkB = newTravelChecks[newTravelChecks.length - 1]
 
-        travelDuration = computeTravelDurationDays(checkA.date, checkB.date)
+        travelDurationDateWindow = computeTravelDurationDays(checkA.date, checkB.date, dateWindowStart, dateWindowStop)
+        travelDurationNoDateWindow = computeTravelDurationDays(checkA.date, checkB.date)
+        console.log(travelDurationDateWindow)
 
         newTravel = new Object({
             id: index,
             type: "range",
-            title: `From ${checkA['location']} to ${checkB['location']}: ${travelDuration} days`,
-            content: `From ${checkA['location']} to ${checkB['location']}: ${travelDuration} days`,
+            title: `From ${checkA['location']} to ${checkB['location']}: ${travelDurationDateWindow} days`,
+            content: `From ${checkA['location']} to ${checkB['location']}: ${travelDurationDateWindow} days`,
             start: checkA.date,
             end: checkB.date,
-            duration: travelDuration
+            duration: travelDurationNoDateWindow,
+            durationDateWindow: travelDurationDateWindow
         })
 
         if (checkA.type === 'DEP' && checkB.type === 'ARR') {
@@ -226,7 +236,7 @@ class TravelsTimeline extends React.PureComponent {
 class TravelsList extends React.PureComponent {
     render() {
         return (
-        <Grid item xs={4}>
+        <Grid item xs={5}>
             <MaterialTable
                 icons={tableIcons}
                 isEditable={false}
@@ -239,6 +249,7 @@ class TravelsList extends React.PureComponent {
                         { title: 'Departure', field: 'start', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.start))},
                         { title: 'Arrival', field: 'end', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.end))},
                         { title: 'Duration', field: 'duration', type: 'numeric', render: (d) => `${d.duration} days` },
+                        { title: 'Duration (date window)', field: 'durationDateWindow', type: 'numeric', render: (d) => `${d.durationDateWindow} days` },
                         { title: 'In the US?', field: 'group', render: (a) => a.group === 1 ? 'Inside the US' : 'Outside the US' }
                     ]}
                 data={this.props.travels}
@@ -403,7 +414,7 @@ class TravelChecksList extends React.Component {
         </DialogActions>
       </Dialog>
       <Grid container spacing={3} direction="row" justify="center" alignItems="center">
-        <Grid item xs={6}>
+        <Grid item xs={5}>
             <MaterialTable
                 icons={tableIcons}
                 columns={[
@@ -450,7 +461,9 @@ class TravelChecksList extends React.Component {
                     })
             }}/>
         </Grid>
-        <TravelsList travels={travelChecksToTravelsList(this.state.travelChecks)['travels']} dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
+        <TravelsList
+            travels={travelChecksToTravelsList(this.state.travelChecks, this.state.dateWindowStart, this.state.dateWindowStop)['travels']}
+            dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
         <Grid item xs={2}>
             <h2>Date window</h2>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -472,7 +485,8 @@ class TravelChecksList extends React.Component {
                 <p>Total days outside the US</p>
             </MuiPickersUtilsProvider>
         </Grid>
-        <TravelsTimeline travels={travelChecksToTravelsList(this.state.travelChecks)['travels']} travelChecks={this.state.travelChecks} dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
+        <TravelsTimeline travels={travelChecksToTravelsList(this.state.travelChecks, this.state.timeWindowStart, this.state.timeWindowStop)['travels']}
+        travelChecks={this.state.travelChecks} dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
 
     </Grid>
     </div>
