@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment, useState } from 'react';
 import ReactDOM from 'react-dom';
 import MaterialTable from 'material-table'
 
@@ -28,6 +28,12 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
+
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
+import DateFnsUtils from '@date-io/date-fns';
+import { KeyboardDatePicker } from "@material-ui/pickers";
+
+import usLocale from "date-fns/locale/en-US";
 
 import { makeStyles, Theme } from '@material-ui/core/styles';
 
@@ -119,7 +125,6 @@ class TravelItem extends React.Component {
 }
 
 function computeTravelDurationDays(date1, date2){
-    console.log(new Date(date1))
     return Math.abs((new Date(date1) - new Date(date2)) / 1000 / 3600 / 24 ) + 1
 }
 
@@ -151,12 +156,20 @@ class TravelsList extends React.PureComponent {
         // Sort the travel check by date
         let travelChecks = JSON.parse(JSON.stringify(this.props.travelChecks)).sort((a,b) => a.date - b.date).reverse()
 
+        // Set up the time window background
+        const timeWindowBackground = new Object({
+            id: 0,
+            type: "background",
+            start: this.props.dateWindowStart,
+            end: this.props.dateWindowStop
+        })
+
         // Set up points to display the checks
         const travelChecksPoints = travelChecks.map((check, index) => new Object({
-            id: index,
+            id: index + 1,
             type: "point",
-            title: `${check['type']} ${check['location']} : ${check['date']}`,
-            content: `${check['location']} : ${check['date']}`,
+            title: `${check['type']} ${check['location']} : ${new Intl.DateTimeFormat("en-US").format(new Date(check['date']))}`,
+            content: `${check['location']} : ${new Intl.DateTimeFormat("en-US").format(new Date(check['date']))}`,
             start: check.date,
             // group: check['type'] === 'DEP' ? 2 : 1
             group: 3
@@ -166,7 +179,7 @@ class TravelsList extends React.PureComponent {
         let travels = []
         let newTravel = {}
         let checkA, checkB, travelDuration
-        let index = travelChecksPoints.length
+        let index = travelChecksPoints.length + 1
         let message = "Done"
         while(travelChecks.length > 1){
             checkA = travelChecks.pop(0)
@@ -197,8 +210,7 @@ class TravelsList extends React.PureComponent {
                 message = `${message} should be consecutive Departures and Arrivals`
             }
         }
-        const result = travels.concat(travelChecksPoints)
-        console.log(result)
+        const result = travels.concat(travelChecksPoints).concat(timeWindowBackground)
 
         return (
         <div>
@@ -207,9 +219,9 @@ class TravelsList extends React.PureComponent {
             icons={tableIcons}
             isEditable={false}
             columns={[
-                    { title: 'Departure', field: 'start', type: 'date'},
-                    { title: 'Arrival', field: 'end', type: 'date'},
-                    { title: 'Duration', field: 'duration', type: 'number', render: (d) => `${d.duration} days` },
+                    { title: 'Departure', field: 'start', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.start))},
+                    { title: 'Arrival', field: 'end', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.end))},
+                    { title: 'Duration', field: 'duration', type: 'numeric', render: (d) => `${d.duration} days` },
                     { title: 'In the US?', field: 'group', render: (a) => a.group === 1 ? 'Inside the US' : 'Outside the US' }
                 ]}
             data={travels}
@@ -223,6 +235,7 @@ class TravelsList extends React.PureComponent {
 class TravelChecksList extends React.Component {
     constructor(props) {
         super(props);
+
         this.state = {
             showModal : false,
             newTravelChecksCount: 0,
@@ -252,7 +265,9 @@ class TravelChecksList extends React.Component {
                 "date": new Date("2017-06-30"),
             }],
             newRawInput: 'poop',
-            processingFunction: 'i94'
+            processingFunction: 'i94',
+            dateWindowStart: new Date(),
+            dateWindowStop: new Date(),
         };
         this.handleNewRawInput = this.handleNewRawInput.bind(this);
         this.handleProcessingFunctionChange = this.handleProcessingFunctionChange.bind(this);
@@ -278,12 +293,21 @@ class TravelChecksList extends React.Component {
         }else{
             this.setState({showNoDataImportedMessage:true});
         }
+        this.updateTravelChecks(this.state.travelChecks.concat(newTravelChecks))
+        event.preventDefault();
+    }
+
+    updateTravelChecks(newTravelChecks){
+        // Updates the travel checks list, and the date window pickers' defaults values
+        const newTravelChecksSorted = JSON.parse(JSON.stringify(newTravelChecks)).sort((a,b) => a.date - b.date)
+        console.log(newTravelChecksSorted[0])
         this.setState(
             {
-                travelChecks: this.state.travelChecks.concat(newTravelChecks)
+                dateWindowStart: newTravelChecksSorted[0].date,
+                dateWindowStop: newTravelChecksSorted[newTravelChecksSorted.length - 1].date,
+                travelChecks: newTravelChecks
             }
-        );
-        event.preventDefault();
+        )
     }
 
     showModalHandler = (event) =>{
@@ -365,7 +389,7 @@ class TravelChecksList extends React.Component {
         <MaterialTable
             icons={tableIcons}
             columns={[
-                    { title: 'Date', field: 'date', type: 'date'},
+                    { title: 'Date', field: 'date', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.date))},
                     { title: 'Location', field: 'location' },
                     { title: 'Type', field: 'type', lookup:{'DEP': 'Departure', 'ARR': 'Arrival'} }
                 ]}
@@ -376,9 +400,7 @@ class TravelChecksList extends React.Component {
                     new Promise((resolve, reject) => {
                     setTimeout(() => {
                         {
-                            const data = this.state.travelChecks;
-                            data.push(newData);
-                            this.setState({ data }, () => resolve());
+                            this.updateTravelChecks(this.state.travelChecks.concat(newData));
                         }
                         resolve();
                     }, 1000);
@@ -387,10 +409,10 @@ class TravelChecksList extends React.Component {
                     new Promise((resolve, reject) => {
                     setTimeout(() => {
                         {
-                            const data = this.state.travelChecks;
-                            const index = data.indexOf(oldData);
-                            data[index] = newData;                
-                            this.setState({ data }, () => resolve());
+                            const newTravelChecks = this.state.travelChecks.concat();
+                            const index = newTravelChecks.indexOf(oldData);
+                            newTravelChecks[index] = newData;                
+                            this.updateTravelChecks(newTravelChecks);
                         }
                         resolve();
                     }, 1000);
@@ -399,17 +421,34 @@ class TravelChecksList extends React.Component {
                 new Promise((resolve, reject) => {
                     setTimeout(() => {
                         {
-                            let data = this.state.travelChecks;
-                            const index = data.indexOf(oldData);
-                            data.splice(index, 1);
-                            this.setState({ data }, () => resolve());
+                            let newTravelChecks = this.state.travelChecks.concat();
+                            const index = newTravelChecks.indexOf(oldData);
+                            newTravelChecks.splice(index, 1);
+                            this.updateTravelChecks(newTravelChecks);
                         }
                         resolve();
                     }, 1000);
                 })
         }}/>
-        <TravelsList travelChecks={this.state.travelChecks} />
-
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <Fragment>
+                <KeyboardDatePicker
+                    variant="dialog"
+                    id="dateWindowStart"
+                    format="MM/dd/yyyy"
+                    value={this.state.dateWindowStart}
+                    onChange={(newD) => this.setState({dateWindowStart: newD}) }
+                />
+                <KeyboardDatePicker
+                    variant="dialog"
+                    id="dateWindowStop"
+                    format="MM/dd/yyyy"
+                    value={this.state.dateWindowStop}
+                    onChange={(newD) => this.setState({dateWindowStop: newD}) }
+                />
+            </Fragment>
+        </MuiPickersUtilsProvider>
+        <TravelsList travelChecks={this.state.travelChecks} dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
         </div>
       );
     }
