@@ -142,11 +142,32 @@ function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWindowStop
     // Returns something like
     // { id: 1, type: "point", title: "loul", content: "Departure from JFK", start: new Date(2013, 5, 20) }
 
+    if(travelChecks.length < 1){
+        return new Object({travels: [], message: 'No travel checks yet'})
+    }
+
     // Sort the travel check by date
     let newTravelChecks = JSON.parse(JSON.stringify(travelChecks)).sort((a,b) => a.date - b.date).reverse()
+    let travels = []
+
+    // Add the time window start and stop as travel checks if they are outside the travels
+    if(new Date(dateWindowStop) > new Date(newTravelChecks[0].date)){
+
+        newTravelChecks.unshift({
+            location: newTravelChecks[0].type === 'DEP' ? 'USA' : 'Abroad',
+            type: newTravelChecks[0].type === 'DEP' ? 'ARR' : 'DEP',
+            date: new Date(dateWindowStop)
+        })
+    }
+    if(new Date(dateWindowStart) < new Date(newTravelChecks[newTravelChecks.length - 1].date)){
+        newTravelChecks.push({
+            location: newTravelChecks[newTravelChecks.length - 1].type === 'DEP' ? 'USA' : 'Abroad',
+            type: newTravelChecks[newTravelChecks.length - 1].type === 'DEP' ? 'ARR' : 'DEP',
+            date: new Date(dateWindowStart)
+        })
+    }
 
     // Browse the list, element by element
-    let travels = []
     let newTravel = {}
     let checkA, checkB, travelDurationDateWindow, travelDurationNoDateWindow
     let index = 0
@@ -249,7 +270,7 @@ class TravelsList extends React.PureComponent {
                         { title: 'Departure', field: 'start', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.start))},
                         { title: 'Arrival', field: 'end', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.end))},
                         { title: 'Duration', field: 'duration', type: 'numeric', render: (d) => `${d.duration} days` },
-                        { title: 'Duration (date window)', field: 'durationDateWindow', type: 'numeric', render: (d) => `${d.durationDateWindow} days` },
+                        //{ title: 'Duration (date window)', field: 'durationDateWindow', type: 'numeric', render: (d) => `${d.durationDateWindow} days` },
                         { title: 'In the US?', field: 'group', render: (a) => a.group === 1 ? 'Inside the US' : 'Outside the US' }
                     ]}
                 data={this.props.travels}
@@ -481,11 +502,15 @@ class TravelChecksList extends React.Component {
                     value={this.state.dateWindowStop}
                     onChange={(newD) => this.setState({dateWindowStop: newD}) }
                 />
-                <p>Total days inside the US</p>
-                <p>Total days outside the US</p>
+                <p>Total days inside the US: {travelChecksToTravelsList(this.state.travelChecks, this.state.dateWindowStart, this.state.dateWindowStop)['travels'].map(
+                    (t) => t['group'] === 1 ? t['durationDateWindow'] : 0
+                ).reduce((a,b) => a+b, 0)}</p>
+                <p>Total days outside the US: {travelChecksToTravelsList(this.state.travelChecks, this.state.dateWindowStart, this.state.dateWindowStop)['travels'].map(
+                    (t) => t['group'] === 2 ? t['durationDateWindow'] : 0
+                ).reduce((a,b) => a+b, 0)}</p>
             </MuiPickersUtilsProvider>
         </Grid>
-        <TravelsTimeline travels={travelChecksToTravelsList(this.state.travelChecks, this.state.timeWindowStart, this.state.timeWindowStop)['travels']}
+        <TravelsTimeline travels={travelChecksToTravelsList(this.state.travelChecks, this.state.dateWindowStart, this.state.dateWindowStop)['travels']}
         travelChecks={this.state.travelChecks} dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
 
     </Grid>
