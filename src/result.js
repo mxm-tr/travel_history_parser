@@ -5,6 +5,8 @@ import { withStyles } from "@material-ui/core/styles";
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
 
 const styles = theme => ({
   root: {
@@ -29,11 +31,15 @@ export class Result extends React.Component {
     return (
     <Grid item xs={12} >
     <Box>
+        <AppBar position="static">
+            <Toolbar>
+              <Typography variant="h6" className={classes.title}>
+                Results
+              </Typography>
+            </Toolbar>
+        </AppBar>
         <Card className={classes.root}>
             <CardContent>
-            <Typography className={classes.title} component="h1">
-                Results
-            </Typography>
             <Typography className={classes.title} color="textSecondary" gutterBottom>
                 Total days inside the US: { this.props.totalDaysInside }
             </Typography>
