@@ -1,0 +1,8 @@
+.vis-timeline{
+    font-family: monospace;
+}
+.vis-item {
+    /* color: ; */
+    border-color: rgb(68, 0, 255);
+    background-color: rgb(172, 194, 255);
+  }

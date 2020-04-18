@@ -1,22 +1,7 @@
-import React, { Fragment, useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
-import MaterialTable from 'material-table'
+import Box from '@material-ui/core/Box';
 
-import AddBox from '@material-ui/icons/AddBox';
-import ArrowDownward from '@material-ui/icons/ArrowDownward';
-import Check from '@material-ui/icons/Check';
-import ChevronLeft from '@material-ui/icons/ChevronLeft';
-import ChevronRight from '@material-ui/icons/ChevronRight';
-import Clear from '@material-ui/icons/Clear';
-import DeleteOutline from '@material-ui/icons/DeleteOutline';
-import Edit from '@material-ui/icons/Edit';
-import FilterList from '@material-ui/icons/FilterList';
-import FirstPage from '@material-ui/icons/FirstPage';
-import LastPage from '@material-ui/icons/LastPage';
-import Remove from '@material-ui/icons/Remove';
-import SaveAlt from '@material-ui/icons/SaveAlt';
-import Search from '@material-ui/icons/Search';
-import ViewColumn from '@material-ui/icons/ViewColumn';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -29,258 +14,30 @@ import Select from '@material-ui/core/Select';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography'
 
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import DateFnsUtils from '@date-io/date-fns';
-import { KeyboardDatePicker } from "@material-ui/pickers";
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import getMuiTheme from 'material-ui/styles/getMuiTheme';
 
-import usLocale from "date-fns/locale/en-US";
-
-import { makeStyles, Theme } from '@material-ui/core/styles';
-
-import { forwardRef } from 'react';
+import DeleteOutline from '@material-ui/icons/DeleteOutline';
+import AddBox from '@material-ui/icons/AddBox';
 
 import './index.css';
 
-import Timeline from 'react-visjs-timeline'
+import { tableIcons } from './icons.js'
+import { travelsList } from './travels.js'
+
+import { DateWindow } from './date_window.js'
+import { TravelsTimeline } from './timeline.js'
+import { TravelChecksList } from './travel_checks.js'
+import { InputFormDialog } from './input_form_dialog.js'
+import { sortTravelChecks, processRawInput, computeTravelDurationDays, sumTravelDaysInside, sumTravelDaysOutside, travelChecksToTravelsList } from './utils.js';
+import { Result } from './result.js'
+
+import moment from 'moment'
 
 
-const tableIcons = {
-    Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
-    Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
-    Clear: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
-    Delete: forwardRef((props, ref) => <DeleteOutline {...props} ref={ref} />),
-    DetailPanel: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
-    Edit: forwardRef((props, ref) => <Edit {...props} ref={ref} />),
-    Export: forwardRef((props, ref) => <SaveAlt {...props} ref={ref} />),
-    Filter: forwardRef((props, ref) => <FilterList {...props} ref={ref} />),
-    FirstPage: forwardRef((props, ref) => <FirstPage {...props} ref={ref} />),
-    LastPage: forwardRef((props, ref) => <LastPage {...props} ref={ref} />),
-    NextPage: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
-    PreviousPage: forwardRef((props, ref) => <ChevronLeft {...props} ref={ref} />),
-    ResetSearch: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
-    Search: forwardRef((props, ref) => <Search {...props} ref={ref} />),
-    SortArrow: forwardRef((props, ref) => <ArrowDownward {...props} ref={ref} />),
-    ThirdStateCheck: forwardRef((props, ref) => <Remove {...props} ref={ref} />),
-    ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
-  };
-
-
-const known_ports_of_entry = {
-    'JFK': {
-        'Country': 'USA'
-    },
-    'LOL': {
-        'Country' : 'LOL'
-    }
-}
-class PortOfEntry{
-    constructor(code){
-        this.code = code
-        if (! code in Object.keys(known_ports_of_entry)){
-            this.code = 'UNKNOWN'
-        }
-    }
-}
-
-const known_passage_types = ['Departure', 'Arrival']
-class PassageType{
-    constructor(name){
-        this.name = name
-        if (! name in Object.keys(known_passage_types)){
-            this.name = 'UNKNOWN'
-        }
-    }
-}
-
-
-function processRawInput(rawInput, processingFunction='i94'){
-    switch(processingFunction){
-        case 'i94':
-            var parsedOutput = rawInput.match(/((\S+){3})/g).slice(3);
-            var items = []
-            while (parsedOutput.length > 0) {
-                items.push({
-                    location: parsedOutput.pop(),
-                    type: parsedOutput.pop() === 'Departure' ? 'DEP' : 'ARR',
-                    date: new Date(parsedOutput.pop())
-                });
-            }
-            return items
-        default:
-            return []
-    }
-}
-
-class TravelItem extends React.Component {
-    constructor(props){
-        super(props);
-        const params = JSON.parse(props.params)
-    }
-    tripDuration(count_arrival_day=true){
-        return this.props.dateArrival - this.props.dateDeparture
-    }
-    render() {return(
-    <p>{this.props.dateDeparture.toString()} {this.props.locationDestination.toString()}</p>
-    )}
-}
-
-function computeTravelDurationDays(dateStart, dateStop, dateWindowStart, dateWindowStop){
-    if (dateWindowStart === undefined || dateWindowStop === undefined){
-        return Math.floor(Math.abs(new Date(dateStop) - new Date(dateStart)) / 1000 / 3600 / 24) + 1
-    }
-    if(new Date(dateStart) >= new Date(dateWindowStop) || new Date(dateStop) <= new Date(dateWindowStart)){
-        return 0
-    }
-
-    return Math.floor((new Date(Math.min(new Date(dateWindowStop), new Date(dateStop))) - new Date(Math.max(new Date(dateWindowStart), new Date(dateStart)))) / 1000 / 3600 / 24) + 1
-}
-
-function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWindowStop){
-    // travelChecks looks like
-    // { location: 'JFK', type: 'DEP' or 'ARR', date: '2020-03-20'
-    // Returns something like
-    // { id: 1, type: "point", title: "loul", content: "Departure from JFK", start: new Date(2013, 5, 20) }
-
-    if(travelChecks.length < 1){
-        return new Object({travels: [], message: 'No travel checks yet'})
-    }
-
-    // Sort the travel check by date
-    let newTravelChecks = JSON.parse(JSON.stringify(travelChecks)).sort((a,b) => a.date - b.date).reverse()
-    let travels = []
-
-    // Add the time window start and stop as travel checks if they are outside the travels
-    if(new Date(dateWindowStop) > new Date(newTravelChecks[0].date)){
-
-        newTravelChecks.unshift({
-            location: newTravelChecks[0].type === 'DEP' ? 'USA' : 'Abroad',
-            type: newTravelChecks[0].type === 'DEP' ? 'ARR' : 'DEP',
-            date: new Date(dateWindowStop)
-        })
-    }
-    if(new Date(dateWindowStart) < new Date(newTravelChecks[newTravelChecks.length - 1].date)){
-        newTravelChecks.push({
-            location: newTravelChecks[newTravelChecks.length - 1].type === 'DEP' ? 'USA' : 'Abroad',
-            type: newTravelChecks[newTravelChecks.length - 1].type === 'DEP' ? 'ARR' : 'DEP',
-            date: new Date(dateWindowStart)
-        })
-    }
-
-    // Browse the list, element by element
-    let newTravel = {}
-    let checkA, checkB, travelDurationDateWindow, travelDurationNoDateWindow
-    let index = 0
-    let message = "Done"
-    while(newTravelChecks.length > 1){
-        checkA = newTravelChecks.pop(0)
-        checkB = newTravelChecks[newTravelChecks.length - 1]
-
-        travelDurationDateWindow = computeTravelDurationDays(checkA.date, checkB.date, dateWindowStart, dateWindowStop)
-        travelDurationNoDateWindow = computeTravelDurationDays(checkA.date, checkB.date)
-        console.log(travelDurationDateWindow)
-
-        newTravel = new Object({
-            id: index,
-            type: "range",
-            title: `From ${checkA['location']} to ${checkB['location']}: ${travelDurationDateWindow} days`,
-            content: `From ${checkA['location']} to ${checkB['location']}: ${travelDurationDateWindow} days`,
-            start: checkA.date,
-            end: checkB.date,
-            duration: travelDurationNoDateWindow,
-            durationDateWindow: travelDurationDateWindow
-        })
-
-        if (checkA.type === 'DEP' && checkB.type === 'ARR') {
-            index++
-            newTravel['group'] = 2 // Outside
-            travels.push(newTravel)
-        }else if(checkA.type === 'ARR' && checkB.type === 'DEP'){
-            index++
-            newTravel['group'] = 1 // Inside
-            travels.push(newTravel)
-        }else{
-            message = `${message} Error parsing travel checks: travel from ${checkA.location} on ${checkA.date} to ${checkB.location} on ${checkB.date}`
-            message = `${message} should be consecutive Departures and Arrivals`
-        }
-    }
-
-    return new Object({travels: travels, message: message})
-
-}
-
-class TravelsTimeline extends React.PureComponent {
-    // http://visjs.org/docs/timeline/#Configuration_Options
-    render(){
-        const timelineOptions = {
-            width: '100%',
-            //height: '160px',
-            stack: true,
-            showMajorLabels: true,
-            //showCurrentTime: true,
-            zoomMin: 1000000,
-            type: 'background',
-            format: {
-                minorLabels: {
-                    minute: 'h:mma',
-                    hour: 'ha'
-                }
-            }
-        }
-        const timelineGroups = [{id: 1, content: 'Inside the US'}, {id: 2, content: 'Outside the US'}, {id: 3, content: 'Checks'}]
-        // Set up the time window background
-        const timeWindowBackground = new Object({
-            id: this.props.travels.length + 1,
-            type: "background",
-            start: this.props.dateWindowStart,
-            end: this.props.dateWindowStop
-        })
-
-        // Set up points to display the checks
-        const travelChecksPoints = this.props.travelChecks.map((check, index) => new Object({
-            id: this.props.travels.length + index + 2,
-            type: "point",
-            title: `${check['type']} ${check['location']} : ${new Intl.DateTimeFormat("en-US").format(new Date(check['date']))}`,
-            content: `${check['location']} : ${new Intl.DateTimeFormat("en-US").format(new Date(check['date']))}`,
-            start: check.date,
-            // group: check['type'] === 'DEP' ? 2 : 1
-            group: 3
-        }))
-        return (
-        <Grid item xs={12}>
-            <Timeline options={timelineOptions} groups={timelineGroups} items={this.props.travels.concat(travelChecksPoints).concat(timeWindowBackground)}/>
-        </Grid>
-        )
-    }
-}
-
-class TravelsList extends React.PureComponent {
-    render() {
-        return (
-        <Grid item xs={5}>
-            <MaterialTable
-                icons={tableIcons}
-                isEditable={false}
-                options={
-                    {
-                        search: false
-                    }
-                }
-                columns={[
-                        { title: 'Departure', field: 'start', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.start))},
-                        { title: 'Arrival', field: 'end', type: 'date', render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.end))},
-                        { title: 'Duration', field: 'duration', type: 'numeric', render: (d) => `${d.duration} days` },
-                        //{ title: 'Duration (date window)', field: 'durationDateWindow', type: 'numeric', render: (d) => `${d.durationDateWindow} days` },
-                        { title: 'In the US?', field: 'group', render: (a) => a.group === 1 ? 'Inside the US' : 'Outside the US' }
-                    ]}
-                data={this.props.travels}
-                title="Travels list" />
-        </Grid>
-    )}
-}
-
-
-class TravelChecksList extends React.Component {
+class App extends React.Component {
     constructor(props) {
         super(props);
 
@@ -295,31 +52,35 @@ class TravelChecksList extends React.Component {
             travelChecks: [{
                 "location": "RRA",
                 "type": "ARR",
-                "date": new Date("2017-03-30"),
+                "date": new moment("2017-03-30"),
             },
             {
                 "location": "BWI",
                 "type": "DEP",
-                "date": new Date("2017-03-31"),
+                "date": new moment("2017-03-31"),
             },
             {
                 "location": "DLA",
                 "type": "ARR",
-                "date": new Date("2017-05-30"),
+                "date": new moment("2017-05-30"),
             },
             {
                 "location": "DUL",
                 "type": "DEP",
-                "date": new Date("2017-06-30"),
+                "date": new moment("2017-06-30"),
             }],
             newRawInput: 'poop',
             processingFunction: 'i94',
-            dateWindowStart: new Date(),
-            dateWindowStop: new Date(),
+            dateWindowStart: new moment(),
+            dateWindowStop: new moment(),
         };
         this.handleNewRawInput = this.handleNewRawInput.bind(this);
         this.handleProcessingFunctionChange = this.handleProcessingFunctionChange.bind(this);
         this.handleProcessNewRawInput = this.handleProcessNewRawInput.bind(this);
+        this.updateTravelChecks = this.updateTravelChecks.bind(this);
+        this.handleWindowStartChange = this.handleWindowStartChange.bind(this);
+        this.handleWindowStopChange = this.handleWindowStopChange.bind(this);
+        this.fitDateWindow = this.fitDateWindow.bind(this);
     }
 
     handleProcessingFunctionChange(event) {
@@ -345,17 +106,47 @@ class TravelChecksList extends React.Component {
         event.preventDefault();
     }
 
+    fitDateWindow(){
+        this.setState({
+            dateWindowStart: this.state.travelChecks[0].date,
+            dateWindowStop: this.state.travelChecks[this.state.travelChecks.length - 1].date
+        })
+    }
+
+    handleWindowStartChange(newD){
+        this.setState({dateWindowStart: newD === null ? this.state.travelChecks[0].date : newD })
+        this.updateTravels()
+    }
+    handleWindowStopChange(newD){
+        this.setState({dateWindowStop: newD === null ? this.state.travelChecks[this.state.travelChecks.length - 1].date : newD })
+        this.updateTravels()
+    }
+
     updateTravelChecks(newTravelChecks){
         // Updates the travel checks list, and the date window pickers' defaults values
-        const newTravelChecksSorted = JSON.parse(JSON.stringify(newTravelChecks)).sort((a,b) => a.date - b.date)
-        console.log(newTravelChecksSorted[0])
+        const newTravelChecksSorted = sortTravelChecks(newTravelChecks)
         this.setState(
-            {
-                dateWindowStart: newTravelChecksSorted[0].date,
-                dateWindowStop: newTravelChecksSorted[newTravelChecksSorted.length - 1].date,
-                travelChecks: newTravelChecks
-            }
-        )
+                {
+                    dateWindowStart: newTravelChecksSorted[0].date,
+                    dateWindowStop: newTravelChecksSorted[newTravelChecksSorted.length - 1].date,
+                    travelChecks: newTravelChecksSorted
+                }
+            )
+        this.updateTravels()
+    }
+    computeTravels(){
+        return travelChecksToTravelsList(this.state.travelChecks, this.state.dateWindowStart, this.state.dateWindowStop)['travels']
+    }
+    updateTravels(){
+        // Turn travel checks into travels list
+        const travelsComputeResult = this.computeTravels()
+        console.log(travelsComputeResult['travels'])
+        this.setState(
+                    {
+                        travels: travelsComputeResult['travels'],
+                        travelsParseMessage: travelsComputeResult['message']
+                    }
+            )
     }
 
     showModalHandler = (event) =>{
@@ -367,7 +158,8 @@ class TravelChecksList extends React.Component {
 
     render() {
       return (
-        <div>
+        <MuiThemeProvider>
+        <Grid container justify="center" alignItems="center">
             <Snackbar open={this.state.showImportingDataMessage} onClose={ () => this.setState({showImportingDataMessage:false}) } autoHideDuration={2000} >
                 <Alert color='info'>Importing Data</Alert>
             </Snackbar>
@@ -377,144 +169,76 @@ class TravelChecksList extends React.Component {
             <Snackbar open={this.state.showNoDataImportedMessage} onClose={ () => this.setState({showNoDataImportedMessage:false}) } autoHideDuration={2000} >
                 <Alert color='error'>No data imported</Alert>
             </Snackbar>
-        <Button 
-            onClick={() => this.setState({showClearAllDialog: true})}
-            variant="contained"
-            color="secondary"
-            size="large"
-            startIcon={<DeleteOutline />}>
-                Clear All Data
-        </Button>
-        <Dialog onClose={() => this.setState({showClearAllDialog: false})} aria-labelledby="simple-dialog-title" open={this.state.showClearAllDialog}>
-        <DialogTitle id="simple-dialog-title">Clear all data</DialogTitle>
-        <DialogActions>
-          <Button onClick={() => this.setState({travelChecks: [], showClearAllDialog: false})} color="primary">
-            Delete all
-          </Button>
-          <Button onClick={() => this.setState({showClearAllDialog: false})} color="primary" autoFocus>
-            Cancel
-          </Button>
-        </DialogActions>
-        </Dialog>
-        <Button 
-            onClick={this.showModalHandler}
-            variant="contained"
-            color="primary"
-            size="large"
-            startIcon={<AddBox />}>
-                Import Data
-        </Button>
-        <Dialog open={this.state.showModal} onClose={this.hideModalHandler} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Import raw data</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Copy and paste raw data
-          </DialogContentText>
-            <form onSubmit={this.handleProcessNewRawInput} >
-                <TextField
-                    autoFocus
-                    margin="dense"
-                    id="standard-multiline-flexible"
-                    label="Multiline"
-                    multiline
-                    rowsMax="4"
-                    name='rawInput'
-                    value={this.state.newRawInput}
-                    onChange={this.handleNewRawInput} />
-                <Select value={this.state.processingFunction} onChange={this.handleProcessingFunctionChange}>
-                    <MenuItem value='i94'>Official I94 processing function</MenuItem>
-                    <MenuItem value='shit'>Other random shit</MenuItem>
-                </Select>
-                <Button type='submit' onClick={this.hideModalHandler}
-                variant="contained"
-                color="primary"
-                size="large"> Process new raw input</Button>
-                </form>
-        </DialogContent>
-        <DialogActions>
-        </DialogActions>
-      </Dialog>
-      <Grid container spacing={3} direction="row" justify="center" alignItems="center">
-        <Grid item xs={5}>
-            <MaterialTable
-                icons={tableIcons}
-                columns={[
-                        { title: 'Date', field: 'date', type: 'date',  filtering: false, render: (a) => new Intl.DateTimeFormat("en-US").format(new Date(a.date))},
-                        { title: 'Location', field: 'location', filtering: false },
-                        { title: 'Type', field: 'type', lookup:{'DEP': 'Departure', 'ARR': 'Arrival'} }
-                    ]}
-                data={this.state.travelChecks}
-                title={this.props.name}
-                options={{searchFieldAlignment: 'left', filtering: true}}
-                editable={{
-                    onRowAdd: newData =>
-                        new Promise((resolve, reject) => {
-                        setTimeout(() => {
-                            {
-                                this.updateTravelChecks(this.state.travelChecks.concat(newData));
-                            }
-                            resolve();
-                        }, 1000);
-                    }),
-                    onRowUpdate: (newData, oldData) =>
-                        new Promise((resolve, reject) => {
-                        setTimeout(() => {
-                            {
-                                const newTravelChecks = this.state.travelChecks.concat();
-                                const index = newTravelChecks.indexOf(oldData);
-                                newTravelChecks[index] = newData;                
-                                this.updateTravelChecks(newTravelChecks);
-                            }
-                            resolve();
-                        }, 1000);
-                    }),
-                onRowDelete: oldData =>
-                    new Promise((resolve, reject) => {
-                        setTimeout(() => {
-                            {
-                                let newTravelChecks = this.state.travelChecks.concat();
-                                const index = newTravelChecks.indexOf(oldData);
-                                newTravelChecks.splice(index, 1);
-                                this.updateTravelChecks(newTravelChecks);
-                            }
-                            resolve();
-                        }, 1000);
-                    })
-            }}/>
-        </Grid>
-        <TravelsList
-            travels={travelChecksToTravelsList(this.state.travelChecks, this.state.dateWindowStart, this.state.dateWindowStop)['travels']}
-            dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
-        <Grid item xs={2}>
-            <h2>Date window</h2>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <p>From</p><KeyboardDatePicker
-                    variant="dialog"
-                    id="dateWindowStart"
-                    format="MM/dd/yyyy"
-                    value={this.state.dateWindowStart}
-                    onChange={(newD) => this.setState({dateWindowStart: newD}) }
-                />
-                <p>To</p><KeyboardDatePicker
-                    variant="dialog"
-                    id="dateWindowStop"
-                    format="MM/dd/yyyy"
-                    value={this.state.dateWindowStop}
-                    onChange={(newD) => this.setState({dateWindowStop: newD}) }
-                />
-                <p>Total days inside the US: {travelChecksToTravelsList(this.state.travelChecks, this.state.dateWindowStart, this.state.dateWindowStop)['travels'].map(
-                    (t) => t['group'] === 1 ? t['durationDateWindow'] : 0
-                ).reduce((a,b) => a+b, 0)}</p>
-                <p>Total days outside the US: {travelChecksToTravelsList(this.state.travelChecks, this.state.dateWindowStart, this.state.dateWindowStop)['travels'].map(
-                    (t) => t['group'] === 2 ? t['durationDateWindow'] : 0
-                ).reduce((a,b) => a+b, 0)}</p>
-            </MuiPickersUtilsProvider>
-        </Grid>
-        <TravelsTimeline travels={travelChecksToTravelsList(this.state.travelChecks, this.state.dateWindowStart, this.state.dateWindowStop)['travels']}
-        travelChecks={this.state.travelChecks} dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
 
+            <Dialog onClose={() => this.setState({showClearAllDialog: false})} aria-labelledby="simple-dialog-title" open={this.state.showClearAllDialog}>
+            <DialogTitle id="simple-dialog-title">Clear all data</DialogTitle>
+            <DialogActions>
+            <Button onClick={() => this.setState({travelChecks: [], showClearAllDialog: false})} color="primary">
+                Delete all
+            </Button>
+            <Button onClick={() => this.setState({showClearAllDialog: false})} color="primary" autoFocus>
+                Cancel
+            </Button>
+            </DialogActions>
+            </Dialog>
+            <InputFormDialog
+                showModal={this.state.showModal}
+                hideModalHandler={this.hideModalHandler}
+                handleNewRawInput={this.handleNewRawInput}
+                handleProcessNewRawInput={this.handleProcessNewRawInput}
+                processingFunction={this.state.processingFunction}
+                handleProcessingFunctionChange={this.handleProcessingFunctionChange} />
+            
+            <Grid container item xs={10} spacing={3} direction="row" alignItems="center" justify="center">
+            <Grid container item xs={12} spacing={3} direction="row" alignItems="center" justify="space-between">
+                <Grid item>
+                    <Typography  component="h1" variant="h6" color="inherit" noWrap >
+                        US Travels calculator
+                    </Typography>
+                </Grid>
+                <Grid item>
+                <Button
+                        onClick={this.showModalHandler}
+                        variant="contained"
+                        color="primary"
+                        size="large"
+                        startIcon={<AddBox />}>
+                            Import Data
+                    </Button>
+                </Grid>
+                <Grid item>
+                    <Button 
+                        onClick={() => this.setState({showClearAllDialog: true})}
+                        variant="contained"
+                        color="secondary"
+                        size="large"
+                        startIcon={<DeleteOutline />}>
+                            Clear All Data
+                    </Button>
+                </Grid>
+            </Grid>
+            <Grid container item spacing={3} justify="space-between" alignItems="center">
+                <Grid container item xs={7} direction="column">
+                    <TravelChecksList travelChecks={ this.state.travelChecks } updateTravelChecks={this.updateTravelChecks} />
+                </Grid>
+                <Grid container item xs={5} direction="column" spacing={3}>
+                    <DateWindow
+                        dateWindowStart={this.state.dateWindowStart}
+                        dateWindowStop={this.state.dateWindowStop}
+                        handleWindowStartChange={ this.handleWindowStartChange }
+                        handleWindowStopChange={ this.handleWindowStopChange } 
+                        fitDateWindow = { this.fitDateWindow }/>
+                    <Result
+                        totalDaysInside={sumTravelDaysInside(this.computeTravels())}
+                        totalDaysOutside={sumTravelDaysOutside(this.computeTravels())}
+                        totalDaysWindow={computeTravelDurationDays(this.state.dateWindowStart, this.state.dateWindowStop)} />
+                </Grid>
+                <TravelsTimeline travels={this.computeTravels()}
+                    travelChecks={this.state.travelChecks} dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
+            </Grid>
+        </Grid>
     </Grid>
-    </div>
+    </MuiThemeProvider>
     );
     }
   }
@@ -524,7 +248,7 @@ class TravelChecksList extends React.Component {
 
 ReactDOM.render(
     <div>
-        <TravelChecksList name="Travel checks list"/>
+        <App name="Travel checks list"/>
     </div>,
     document.getElementById('root')
   );
