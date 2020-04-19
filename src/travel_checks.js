@@ -34,7 +34,7 @@ export function TravelChecksList(props) {
             <MaterialTable
                 icons={tableIcons}
                 columns={[
-                        { title: 'Date', field: 'date', type: 'date',  filtering: false, render: (a) => moment(a.date).format('YYYY-MM-DD') },
+                        { title: 'Date', field: 'date', type: 'date',  filtering: false, render: (a) => moment(a.date).format('YYYY/MM/DD') },
                         { title: 'Location', field: 'location', filtering: false },
                         { title: 'Type', field: 'type', lookup:{'DEP': 'Departure', 'ARR': 'Arrival'} }
                     ]}

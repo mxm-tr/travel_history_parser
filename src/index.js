@@ -1,41 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Box from '@material-ui/core/Box';
+import moment from 'moment'
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import TextField from '@material-ui/core/TextField';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography'
-
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import getMuiTheme from 'material-ui/styles/getMuiTheme';
-
 import DeleteOutline from '@material-ui/icons/DeleteOutline';
 import AddBox from '@material-ui/icons/AddBox';
 
 import './index.css';
-
-import { tableIcons } from './icons.js'
-import { travelsList } from './travels.js'
 
 import { DateWindow } from './date_window.js'
 import { TravelsTimeline } from './timeline.js'
 import { TravelChecksList } from './travel_checks.js'
 import { InputFormDialog } from './input_form_dialog.js'
 import { sortTravelChecks, processRawInput, computeTravelDurationDays, sumTravelDaysInside, sumTravelDaysOutside, travelChecksToTravelsList } from './utils.js';
-import { Result } from './result.js'
-
-import moment from 'moment'
-
+import { Result, ParsingErrors } from './result.js'
 
 class App extends React.Component {
     constructor(props) {
@@ -51,23 +37,23 @@ class App extends React.Component {
             travelChecks: [],
             // travelChecks: [{
             //     "location": "RRA",
-            //     "type": "ARR",
-            //     "date": new moment("2017-03-30"),
+            //     "type": "DEP",
+            //     "date": "2017/03/30",
             // },
             // {
             //     "location": "BWI",
             //     "type": "DEP",
-            //     "date": new moment("2017-03-31"),
+            //     "date": "2017/03/31",
             // },
             // {
             //     "location": "DLA",
             //     "type": "ARR",
-            //     "date": new moment("2017-05-30"),
+            //     "date": "2017/05/30",
             // },
             // {
             //     "location": "DUL",
             //     "type": "DEP",
-            //     "date": new moment("2017-06-30"),
+            //     "date": "2017/06/30",
             // }],
             newRawInput: 'poop',
             processingFunction: 'i94',
@@ -134,25 +120,26 @@ class App extends React.Component {
             )
         this.updateTravels()
     }
+    computeTravelsWithMessage(){
+       return travelChecksToTravelsList(this.state.travelChecks, this.state.dateWindowStart, this.state.dateWindowStop)
+    }
     computeTravels(){
-        return travelChecksToTravelsList(this.state.travelChecks, this.state.dateWindowStart, this.state.dateWindowStop)['travels']
+        return this.computeTravelsWithMessage()['travels']
     }
     updateTravels(){
-        // Turn travel checks into travels list
-        const travelsComputeResult = this.computeTravels()
-        console.log(travelsComputeResult['travels'])
+        const travelsComputeResult = this.computeTravelsWithMessage()
         this.setState(
-                    {
-                        travels: travelsComputeResult['travels'],
-                        travelsParseMessage: travelsComputeResult['message']
-                    }
-            )
+            {
+                travels: travelsComputeResult['travels'],
+                travelsParseMessage: travelsComputeResult['messages']
+            }
+        )
     }
 
-    showModalHandler = (event) =>{
+    showModalHandler = () =>{
         this.setState({showModal:true});
     }
-    hideModalHandler = (event) =>{
+    hideModalHandler = () =>{
         this.setState({showModal:false});
     }
 
@@ -192,7 +179,7 @@ class App extends React.Component {
             <Grid container item xs={10} spacing={3} direction="row" alignItems="center" justify="center">
             <Grid container item xs={12} spacing={3} direction="row" alignItems="center" justify="space-between">
                 <Grid item>
-                    <Typography  component="h1" variant="h6" color="inherit" noWrap >
+                    <Typography  component="h1" variant="h6" color="inherit" noWrap>
                         US Travels calculator
                     </Typography>
                 </Grid>
@@ -220,6 +207,7 @@ class App extends React.Component {
             <Grid container item spacing={3} justify="space-between" alignItems="center">
                 <Grid container item xs={7} direction="column">
                     <TravelChecksList travelChecks={ this.state.travelChecks } updateTravelChecks={this.updateTravelChecks} />
+                    <ParsingErrors messages={this.state.travelsParseMessage} />
                 </Grid>
                 <Grid container item xs={5} direction="column" spacing={3}>
                     <DateWindow

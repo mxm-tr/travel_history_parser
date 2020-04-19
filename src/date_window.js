@@ -2,7 +2,6 @@ import React from 'react';
 import { DatePicker } from "@material-ui/pickers";
 import Grid from '@material-ui/core/Grid';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import { withStyles } from "@material-ui/core/styles";
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
@@ -67,28 +66,14 @@ export class DateWindow extends React.Component {
               </Typography>
             </Toolbar>
               <Tabs value={this.state.tabValue} onChange={this.handleTabChange} aria-label="Counting period">
-                  <Tab label="One Year" {...a11yProps(0)} />
-                  <Tab label="Custom dates" {...a11yProps(1)} />
+                  <Tab label="Custom dates" {...a11yProps(0)} />
+                  <Tab label="One Year" {...a11yProps(1)} />
                   <Tab label="Whole travel history" {...a11yProps(2)} />
               </Tabs>
             </AppBar>
           <Card className={classes.root}>
           <CardContent>
             <TabPanel value={this.state.tabValue} index={0}>
-              <Typography className={classes.title} component="h1">
-                Count travel days in a full year
-              </Typography>
-              <DatePicker
-                views={["year"]}
-                label="Year long period"
-                value={this.props.dateWindowStart}
-                onChange={ this.selectYear }
-                />
-              <Typography component="p" color="textSecondary">
-                  The total of days will be counted for the given year.
-              </Typography>
-            </TabPanel>
-            <TabPanel value={this.state.tabValue} index={1}>
               <Typography className={classes.title} component="h1">
                 Count travel days on a specific period
               </Typography>
@@ -110,6 +95,20 @@ export class DateWindow extends React.Component {
               />
               <Typography component="p" color="textSecondary">
                   The total of days will be counted between the given dates.
+              </Typography>
+            </TabPanel>
+            <TabPanel value={this.state.tabValue} index={1}>
+              <Typography className={classes.title} component="h1">
+                Count travel days in a full year
+              </Typography>
+              <DatePicker
+                views={["year"]}
+                label="Year long period"
+                value={this.props.dateWindowStart}
+                onChange={ this.selectYear }
+                />
+              <Typography component="p" color="textSecondary">
+                  The total of days will be counted for the given year.
               </Typography>
             </TabPanel>
             <TabPanel value={this.state.tabValue} index={2}>

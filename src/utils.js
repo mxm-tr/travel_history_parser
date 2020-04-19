@@ -1,6 +1,3 @@
-import DateFnsUtils from '@date-io/date-fns';
-// import usLocale from "date-fns/locale/en-US";
-import parseISO from "date-fns/parseISO";
 import differenceInDays from 'date-fns/differenceInDays';
 import isSameDay from 'date-fns/isSameDay';
 import max from 'date-fns/max';
@@ -8,28 +5,29 @@ import min from 'date-fns/min';
 import moment from 'moment';
 
 export function sortTravelChecks(travelChecks){
-    return JSON.parse(JSON.stringify(travelChecks)).sort((a,b) => a.date - b.date)
+    let newList = Array.from(travelChecks)
+    newList.sort((a,b) => a.date - b.date)
+    return newList
 }
 
-function sumTravelDays(travelsList){
+export function sumTravelDays(travelsList){
     if (travelsList.length < 1){
         return 0
     }
     const allDates = travelsList.map((t) => t.start).concat(travelsList.map((t) => t.end))
     const extraneousDays = allDates.sort().map((v, i) => i < allDates.length - 1 ? (isSameDay(v, allDates[i + 1]) ? 1 : 0) : 0 ).reduce((a,b) => a + b)
-    console.log(extraneousDays)
     return Math.round(travelsList.map((a) => a['durationDateWindow']).reduce((a,b) => a + b, 0) - extraneousDays)
 }
 
-function sumTravelDaysOutside(travelsList){
+export function sumTravelDaysOutside(travelsList){
     return sumTravelDays(travelsList.filter((t) => t['group'] === 2))
 }
 
-function sumTravelDaysInside(travelsList){
+export function sumTravelDaysInside(travelsList){
     return sumTravelDays(travelsList.filter((t) => t['group'] === 1))
 }
 
-function processRawInput(rawInput, processingFunction='i94'){
+export function processRawInput(rawInput, processingFunction='i94'){
     switch(processingFunction){
         case 'i94':
             var parsedOutput = rawInput.match(/((\S+){3})/g).slice(3);
@@ -76,14 +74,14 @@ export function computeTravelDurationDays(dateStart, dateStop, dateWindowStart, 
     ) + 1
 }
 
-function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWindowStop){
+export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWindowStop){
     // travelChecks looks like
     // { location: 'JFK', type: 'DEP' or 'ARR', date: '2020-03-20'
     // Returns something like
     // { id: 1, type: "point", title: "loul", content: "Departure from JFK", start: new Date(2013, 5, 20) }
 
     if(travelChecks.length < 1){
-        return new Object({travels: [], message: 'No travel checks yet'})
+        return {travels: [], message: 'No travel checks yet'}
     }
 
     // Sort the travel check by date
@@ -115,27 +113,21 @@ function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWindowStop
     let newTravel = {}
     let checkA, checkB, travelTitle, travelDurationDateWindow, travelDurationNoDateWindow
     let index = 0
-    let message = "Done"
+    let messages = []
+    let message = ""
     while(newTravelChecks.length > 1){
+        message = ""
         checkA = newTravelChecks.pop(0)
         checkB = newTravelChecks[newTravelChecks.length - 1]
 
         travelDurationDateWindow = computeTravelDurationDays(checkA.date, checkB.date, dateWindowStart, dateWindowStop)
         travelDurationNoDateWindow = computeTravelDurationDays(checkA.date, checkB.date)
-        // travelDurationDateWindow = computeTravelDurationDays(
-        //     Intl.DateTimeFormat("en-US").format(new Date(checkA.date)),
-        //     Intl.DateTimeFormat("en-US").format(new Date(checkB.date)),
-        //     Intl.DateTimeFormat("en-US").format(new Date(dateWindowStart)),
-        //     Intl.DateTimeFormat("en-US").format(new Date(dateWindowStop))
-        // )
-        // travelDurationNoDateWindow = computeTravelDurationDays(
-        //     Intl.DateTimeFormat("en-US").format(new Date(checkA.date)), 
-        //     Intl.DateTimeFormat("en-US").format(new Date(checkB.date))
-        // )
 
         // Build the travel title
-        travelTitle = `From ${checkA['location']} to ${checkB['location']}: ${travelDurationDateWindow} days (${travelDurationNoDateWindow - travelDurationDateWindow} days outside selected period)`
-
+        travelTitle = `From ${checkA['location']} to ${checkB['location']}: ${travelDurationDateWindow} days`
+        if (travelDurationNoDateWindow - travelDurationDateWindow > 0){
+            travelTitle = `${travelTitle} (${travelDurationNoDateWindow - travelDurationDateWindow} days outside selected period)`
+        }
         // If the travel is completing a time window, its message will be updated
         // if (checkA['isAdditionalDateWindowStartCheck']){
         //     travelTitle = `${travelTitle} <br /> (New travel added to fill space between the beginning of the selected period and the first travel)`
@@ -145,7 +137,7 @@ function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWindowStop
         // }
 
         // Create a new travel object
-        newTravel = new Object({
+        newTravel = {
             id: index,
             type: "range",
             title: travelTitle,
@@ -156,7 +148,7 @@ function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWindowStop
             end: checkB.date,
             duration: travelDurationNoDateWindow,
             durationDateWindow: travelDurationDateWindow
-        })
+        }
 
         if (checkA.type === 'DEP' && checkB.type === 'ARR') {
             index++
@@ -167,20 +159,14 @@ function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWindowStop
             newTravel['group'] = 1 // Inside
             travels.push(newTravel)
         }else{
-            message = `${message} Error parsing travel checks: travel from ${checkA.location} on ${checkA.date} to ${checkB.location} on ${checkB.date}`
+            console.log(checkA.date)
+            message = `${message} Travel checks ${checkA.location}:${checkA.date}`
+            message = `${message} and ${checkB.location}:${checkB.date}`
             message = `${message} should be consecutive Departures and Arrivals`
+            messages.push(message)
         }
     }
 
-    return new Object({travels: travels, message: message})
+    return {travels: travels, messages: messages}
 
 }
-
-// export class DateFnsUtilsUS extends DateFnsUtils {
-//     constructor(props) {
-//         super(props)
-//         this.locale = usLocale
-//     }
-// }
-
-export { processRawInput, sumTravelDays, sumTravelDaysInside, sumTravelDaysOutside, travelChecksToTravelsList };

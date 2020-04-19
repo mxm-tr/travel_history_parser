@@ -9,6 +9,16 @@ import Toolbar from '@material-ui/core/Toolbar';
 
 class TravelsTimeline extends React.PureComponent {
     // http://visjs.org/docs/timeline/#Configuration_Options
+    constructor(props) {
+        super(props);
+        this.timelineRef = React.createRef();  
+    }
+    componentDidUpdate(){
+        // Adapt zoom to fit all travels in view
+        if (this.timelineRef.current){
+            this.timelineRef.current["$el"].fit()
+        }
+    }
     render(){
         const classes = this.props;
         const timelineOptions = {
@@ -16,7 +26,7 @@ class TravelsTimeline extends React.PureComponent {
             //height: '160px',
             stack: true,
             showMajorLabels: true,
-            //showCurrentTime: true,
+            showCurrentTime: false,
             zoomMin: 1000000,
             type: 'background',
             format: {
@@ -30,14 +40,14 @@ class TravelsTimeline extends React.PureComponent {
         const timelineGroups = [{id: 1, content: 'Inside the US'}, {id: 2, content: 'Outside the US'}, {id: 3, content: 'Checks'}]
 
         // Set up the time window background
-        const timeWindowBackground = new Object({
+        const timeWindowBackground = {
             id: this.props.travels.length + 1,
             type: "background",
             // start: new Intl.DateTimeFormat("en-US").format(new Date(this.props.dateWindowStart)),
             start: this.props.dateWindowStart,
             // end: new Intl.DateTimeFormat("en-US").format(new Date(this.props.dateWindowStop))
             end: this.props.dateWindowStop
-        })
+        }
 
         // Set up points to display the checks
         let travelChecksPoints = this.props.travelChecks.map((check, index) => new Object({
@@ -78,7 +88,10 @@ class TravelsTimeline extends React.PureComponent {
               </Typography>
             </Toolbar>
             </AppBar>
-            <Timeline options={timelineOptions} groups={timelineGroups} items={this.props.travels.concat(travelChecksPoints).concat(timeWindowBackground)}/>
+            <Timeline options={timelineOptions}
+                ref={this.timelineRef}
+                groups={timelineGroups}
+                items={this.props.travels.concat(travelChecksPoints).concat(timeWindowBackground)} />
         </Grid>
         )
     }
