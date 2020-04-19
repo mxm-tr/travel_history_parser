@@ -48,27 +48,27 @@ class App extends React.Component {
             showClearAllDialog: false,
             showDataImportedMessage: false,
             showNoDataImportedMessage: false,
-            // travelChecks: [],
-            travelChecks: [{
-                "location": "RRA",
-                "type": "ARR",
-                "date": new moment("2017-03-30"),
-            },
-            {
-                "location": "BWI",
-                "type": "DEP",
-                "date": new moment("2017-03-31"),
-            },
-            {
-                "location": "DLA",
-                "type": "ARR",
-                "date": new moment("2017-05-30"),
-            },
-            {
-                "location": "DUL",
-                "type": "DEP",
-                "date": new moment("2017-06-30"),
-            }],
+            travelChecks: [],
+            // travelChecks: [{
+            //     "location": "RRA",
+            //     "type": "ARR",
+            //     "date": new moment("2017-03-30"),
+            // },
+            // {
+            //     "location": "BWI",
+            //     "type": "DEP",
+            //     "date": new moment("2017-03-31"),
+            // },
+            // {
+            //     "location": "DLA",
+            //     "type": "ARR",
+            //     "date": new moment("2017-05-30"),
+            // },
+            // {
+            //     "location": "DUL",
+            //     "type": "DEP",
+            //     "date": new moment("2017-06-30"),
+            // }],
             newRawInput: 'poop',
             processingFunction: 'i94',
             dateWindowStart: new moment(),

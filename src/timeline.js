@@ -3,9 +3,14 @@ import Grid from '@material-ui/core/Grid';
 import Timeline from 'react-visjs-timeline';
 import './timeline.css'
 
+import Typography from '@material-ui/core/Typography';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+
 class TravelsTimeline extends React.PureComponent {
     // http://visjs.org/docs/timeline/#Configuration_Options
     render(){
+        const classes = this.props;
         const timelineOptions = {
             width: '100%',
             //height: '160px',
@@ -66,6 +71,13 @@ class TravelsTimeline extends React.PureComponent {
         // )
         return (
         <Grid item xs={12}>
+            <AppBar position="static">
+            <Toolbar>
+              <Typography variant="h6" className={classes.title}>
+                Timeline
+              </Typography>
+            </Toolbar>
+            </AppBar>
             <Timeline options={timelineOptions} groups={timelineGroups} items={this.props.travels.concat(travelChecksPoints).concat(timeWindowBackground)}/>
         </Grid>
         )

@@ -8,23 +8,6 @@ import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 
-const styles = theme => ({
-  root: {
-    minWidth: 275,
-  },
-  bullet: {
-    display: 'inline-block',
-    margin: '0 2px',
-    transform: 'scale(0.8)',
-  },
-  title: {
-    fontSize: 14,
-  },
-  pos: {
-    marginBottom: 12,
-  },
-});
-
 export class Result extends React.Component {
     render () { 
         const classes = this.props;
@@ -55,5 +38,3 @@ export class Result extends React.Component {
     </Grid>
     )}
 }
-
-export default withStyles(styles, { withTheme: true })(Result);

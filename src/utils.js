@@ -137,12 +137,12 @@ function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWindowStop
         travelTitle = `From ${checkA['location']} to ${checkB['location']}: ${travelDurationDateWindow} days (${travelDurationNoDateWindow - travelDurationDateWindow} days outside selected period)`
 
         // If the travel is completing a time window, its message will be updated
-        if (checkA['isAdditionalDateWindowStartCheck']){
-            travelTitle = `${travelTitle} <br /> (New travel added to fill space between the beginning of the selected period and the first travel)`
-        }
-        if (checkB['isAdditionalDateWindowStopCheck']){
-            travelTitle = `${travelTitle} <br /> (New travel added to fill space between the last travel and the end of the selected period)`
-        }
+        // if (checkA['isAdditionalDateWindowStartCheck']){
+        //     travelTitle = `${travelTitle} <br /> (New travel added to fill space between the beginning of the selected period and the first travel)`
+        // }
+        // if (checkB['isAdditionalDateWindowStopCheck']){
+        //     travelTitle = `${travelTitle} <br /> (New travel added to fill space between the last travel and the end of the selected period)`
+        // }
 
         // Create a new travel object
         newTravel = new Object({

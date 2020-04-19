@@ -15,23 +15,6 @@ import Tab from '@material-ui/core/Tab';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 
-const styles = () => ({
-  root: {
-    minWidth: 275,
-  },
-  bullet: {
-    display: 'inline-block',
-    margin: '0 2px',
-    transform: 'scale(0.8)',
-  },
-  title: {
-    fontSize: 14,
-  },
-  pos: {
-    marginBottom: 12,
-  },
-});
-
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -149,5 +132,3 @@ export class DateWindow extends React.Component {
     </Grid>
   )}
 }
-
-export default withStyles(styles, { withTheme: true })(DateWindow);

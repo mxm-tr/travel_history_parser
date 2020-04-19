@@ -1,50 +1,36 @@
 import React from 'react';
 import { tableIcons } from './icons.js'
 import Grid from '@material-ui/core/Grid';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import { withStyles } from "@material-ui/core/styles";
-import Typography from '@material-ui/core/Typography';
-import DateFnsUtils from '@date-io/date-fns';
+import { makeStyles } from '@material-ui/styles';
 import MaterialTable from 'material-table';
 import moment from 'moment';
-import AppBar from 'material-ui/AppBar';
-import Toolbar from 'material-ui/Toolbar';
-import Paper from '@material-ui/core/Paper';
 import Card from '@material-ui/core/Card';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 
-const styles = () => ({
-    root: {
-      minWidth: 275,
-    },
-    bullet: {
-      display: 'inline-block',
-      margin: '0 2px',
-      transform: 'scale(0.8)',
-    },
-    title: {
-      fontSize: 14,
-    },
-    pos: {
-      marginBottom: 12,
-    },
+import './travel_checks.css'
+
+const useStyles = makeStyles({
+    blueBackground: {
+        background: 'linear-gradient(45deg, #3f51b5 30%, #3f51b5 90%)',
+        border: 0,
+        borderRadius: 0,
+        boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
+        color: 'white',
+        height: 48,
+        padding: '0 30px',
+        alignItems: 'center'
+    }
   });
 
-export class TravelChecksList extends React.Component {
-    constructor(props){
-        super(props);
-    }
-    render() {
-        const classes = this.props;
+export function TravelChecksList(props) {
+        const classes = useStyles(props);
         return (
         <Grid item xs={12}>
           <Card>
-            <Toolbar MuiAppBar-colorPrimary >
+            {/* <Toolbar className={classes.blueBackground}>
                 <Typography variant="h6" className={classes.title}>
                     Travel checks list
                 </Typography>
-            </Toolbar>
+            </Toolbar> */}
             <MaterialTable
                 icons={tableIcons}
                 columns={[
@@ -52,7 +38,18 @@ export class TravelChecksList extends React.Component {
                         { title: 'Location', field: 'location', filtering: false },
                         { title: 'Type', field: 'type', lookup:{'DEP': 'Departure', 'ARR': 'Arrival'} }
                     ]}
-                data={this.props.travelChecks}
+                data={props.travelChecks}
+                title="Travel checks list"
+                style = {{classes}}
+                options={{
+                    search: false,
+                    exportButton: true,
+                    searchFieldStyle: {
+                      backgroundColor: '#01579b',
+                      color: '#FFF'
+                    },
+                    rowStyle: rowData => ( { backgroundColor: (rowData.tableData.id % 2) ? '#EEE' : '#FFF' } )
+                }}
                 // localization={{ dateTimePickerLocalization: 'en_US' }}
                 // options={{searchFieldAlignment: 'left', filtering: true}}
                 editable={{
@@ -60,7 +57,7 @@ export class TravelChecksList extends React.Component {
                         new Promise((resolve) => {
                         setTimeout(() => {
                             {
-                                this.props.updateTravelChecks(this.props.travelChecks.concat(newData));
+                                props.updateTravelChecks(props.travelChecks.concat(newData));
                             }
                             resolve();
                         }, 1000);
@@ -69,10 +66,10 @@ export class TravelChecksList extends React.Component {
                         new Promise((resolve) => {
                         setTimeout(() => {
                             {
-                                const newTravelChecks = this.props.travelChecks.concat();
+                                const newTravelChecks = props.travelChecks.concat();
                                 const index = newTravelChecks.indexOf(oldData);
                                 newTravelChecks[index] = newData;              
-                                this.props.updateTravelChecks(newTravelChecks);
+                                props.updateTravelChecks(newTravelChecks);
                             }
                             resolve();
                         }, 1000);
@@ -81,10 +78,10 @@ export class TravelChecksList extends React.Component {
                     new Promise((resolve) => {
                         setTimeout(() => {
                             {
-                                let newTravelChecks = this.props.travelChecks.concat();
+                                let newTravelChecks = props.travelChecks.concat();
                                 const index = newTravelChecks.indexOf(oldData);
                                 newTravelChecks.splice(index, 1);
-                                this.props.updateTravelChecks(newTravelChecks);
+                                props.updateTravelChecks(newTravelChecks);
                             }
                             resolve();
                         }, 1000);
@@ -92,7 +89,5 @@ export class TravelChecksList extends React.Component {
             }}/>
             </Card>
         </Grid>
-    )}
-};
-
-export default withStyles(styles, { withTheme: true })(TravelChecksList);
+    )
+}
