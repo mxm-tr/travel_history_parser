@@ -163,7 +163,7 @@ export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWin
             // message = 
             errors.push({
                 travelChecks: [checkA, checkB],
-                message: `should be consecutive Departures and Arrivals`
+                message: `should be consecutive Arrivals and Departures`
             })
         }
     }

@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import Grid from '@material-ui/core/Grid';
 import Timeline from 'react-visjs-timeline';
 import './timeline.css'
@@ -6,6 +7,8 @@ import './timeline.css'
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
+import { renderTravelCheck } from './result';
+import moment from 'moment';
 
 class TravelsTimeline extends React.PureComponent {
     // http://visjs.org/docs/timeline/#Configuration_Options
@@ -35,6 +38,21 @@ class TravelsTimeline extends React.PureComponent {
                     hour: 'ha'
                 }
             },
+            template: function (item, element, data) {
+                // console.log(data)
+                if(item.travelCheck === undefined){
+                    return `From ${moment(data.start).format('YYYY/MM/DD')} to ${moment(data.end).format('YYYY/MM/DD')}`
+                    // return '<h1>' + item.header + data.moving?' '+ moment(data.start).format('YYYY/MM/DD'):'' + '</h1><p>' + item.description + '</p>';
+                    return '<h1>' + item.header + data.moving?' '+ data.start:'' + '</h1><p>' + item.description + '</p>';
+                }else{
+                    // Should be simply this:
+                    // return ReactDOM.render(<div>{renderTravelCheck(item.travelCheck)}</div>, element);
+                    // But a bug occurs, workaround from https://github.com/almende/vis/issues/3592#issuecomment-422493078
+                    return ReactDOM.createPortal(
+                        ReactDOM.render(<div>{renderTravelCheck(item.travelCheck)}</div>, element ),
+                        element, () => { window.timeline.redraw()} );
+                }
+            }
             // locale: 'en_US'
         }
         const timelineGroups = [{id: 1, content: 'Inside the US'}, {id: 2, content: 'Outside the US'}, {id: 3, content: 'Checks'}]
@@ -46,7 +64,8 @@ class TravelsTimeline extends React.PureComponent {
             // start: new Intl.DateTimeFormat("en-US").format(new Date(this.props.dateWindowStart)),
             start: this.props.dateWindowStart,
             // end: new Intl.DateTimeFormat("en-US").format(new Date(this.props.dateWindowStop))
-            end: this.props.dateWindowStop
+            end: this.props.dateWindowStop,
+            content: ''
         }
 
         // Set up points to display the checks
@@ -57,7 +76,8 @@ class TravelsTimeline extends React.PureComponent {
             content: `${check['location']} : ${/*new Intl.DateTimeFormat("en-US").format(*/check['date']/*)*/}`,
             start: /*new Intl.DateTimeFormat("en-US").format(*/check.date/*)*/,
             // group: check['type'] === 'DEP' ? 2 : 1
-            group: 3
+            group: 3,
+            travelCheck: check
         }))
 
         //  Display the travel window limits
@@ -79,6 +99,7 @@ class TravelsTimeline extends React.PureComponent {
         //         })
         //     ]        
         // )
+        console.log(this.props.travels.concat(travelChecksPoints).concat(timeWindowBackground))
         return (
         <Grid item xs={12}>
             <AppBar position="static">
