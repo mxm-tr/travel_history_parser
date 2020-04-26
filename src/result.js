@@ -232,12 +232,13 @@ export function InfoDialog(props) {
               In most cases, the US immigration calculates travel durations with +1 day:
               It counts the <b>amount of dates</b> you were inside/outside the US, not the amount of days.
               <br />
-              (e.g: a trip from April 1st to April 3rd will be counted as a three days trip)
+              (e.g: a trip from April 1st to April 3rd will be counted as a three-day trip)
               <br />
               
               <br />
               <b>Departure and Arrival dates are counted both as Inside and Outside the US</b>:
               Given a trip abroad from April 1st to April 3rd, three days will be counted as Outside the US.
+              <br/>
               Also, April 1st and April 3rd will be counted as Inside the US since you were traveling on these dates.
               <br/>
               That's why the sum of days Inside and Outside the US during a year is not equal to 365 (or 366)!
@@ -251,7 +252,7 @@ export function InfoDialog(props) {
             <Typography variant="p">
               Let's say you want to count your travel days in 2017 and the only trip you had
               was in Mexico on April 1st 2017, and you came back April 5th 2017. <br /> <br />
-              This shows up in your I94 with the folowing travel checks: <br /> {
+              This shows up in your I94 with the following travel checks: <br /> {
                 renderTravelCheck({date: moment('2017/04/01'),
                 location: 'MIA', type: 'DEP'})
               }(Departure) and {

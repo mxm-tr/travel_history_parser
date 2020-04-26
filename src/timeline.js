@@ -58,7 +58,7 @@ class TravelsTimeline extends React.PureComponent {
             }
             // locale: 'en_US'
         }
-        const timelineGroups = [{id: 1, content: 'Inside the US'}, {id: 2, content: 'Outside the US'}, {id: 3, content: 'Checks'}]
+        const timelineGroups = [{id: 2, content: 'Outside the US'}, {id: 1, content: 'Inside the US'}, {id: 3, content: 'Checks'}]
 
         // Set up the time window background
         const timeWindowBackground = {
