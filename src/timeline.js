@@ -39,11 +39,14 @@ class TravelsTimeline extends React.PureComponent {
                 }
             },
             template: function (item, element, data) {
-                // console.log(data)
+                let content = ""
                 if(item.travelCheck === undefined){
-                    return `From ${moment(data.start).format('YYYY/MM/DD')} to ${moment(data.end).format('YYYY/MM/DD')}`
-                    // return '<h1>' + item.header + data.moving?' '+ moment(data.start).format('YYYY/MM/DD'):'' + '</h1><p>' + item.description + '</p>';
-                    return '<h1>' + item.header + data.moving?' '+ data.start:'' + '</h1><p>' + item.description + '</p>';
+                    if(item.type == "background"){
+                        content = "Selected period"
+                    }else{
+                        content = `From ${moment(data.start).format('YYYY/MM/DD')} to ${moment(data.end).format('YYYY/MM/DD')}`
+                    }
+                    return content 
                 }else{
                     // Should be simply this:
                     // return ReactDOM.render(<div>{renderTravelCheck(item.travelCheck)}</div>, element);
@@ -72,9 +75,9 @@ class TravelsTimeline extends React.PureComponent {
         let travelChecksPoints = this.props.travelChecks.map((check, index) => new Object({
             id: this.props.travels.length + index + 2,
             type: "point",
-            title: `${check['type']} ${check['location']} : ${/*new Intl.DateTimeFormat("en-US").format(*/check['date']/*)*/}`,
-            content: `${check['location']} : ${/*new Intl.DateTimeFormat("en-US").format(*/check['date']/*)*/}`,
-            start: /*new Intl.DateTimeFormat("en-US").format(*/check.date/*)*/,
+            title: `${check['type']} ${check['location']} : ${check['date']}`,
+            content: `${check['location']} : ${check['date']}`,
+            start: check.date,
             // group: check['type'] === 'DEP' ? 2 : 1
             group: 3,
             travelCheck: check

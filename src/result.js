@@ -127,6 +127,11 @@ export function Result(props) {
   <CardContent>
     <TableContainer component={Paper}>
       <Table className={classes.table} aria-label="simple table">
+      <caption>
+        <Button align="center" size="small"  color="primary" variant="contained" onClick={handleClickOpen('paper')}>
+          More information
+        </Button>
+      </caption>
         <TableBody>
             <TableRow key="inside-count">
               <TableCell component="th" scope="row">
@@ -163,11 +168,6 @@ export function Result(props) {
         </TableBody>
       </Table>
     </TableContainer>
-    <CardActions>
-      <Button align="center" size="small"  color="primary" variant="contained" onClick={handleClickOpen('paper')}>
-        More information
-      </Button>
-    </CardActions>
     <InfoDialog handleClickOpen={handleClickOpen} handleClose={handleClose} open={open} />
   </CardContent>
 
@@ -230,7 +230,7 @@ export function InfoDialog(props) {
             </Typography>
             <Typography variant="p">
               In most cases, the US immigration calculates travel durations with +1 day:
-              what counts is the <b>amount of dates</b> you were inside/outside the US, not the amount of days.
+              It counts the <b>amount of dates</b> you were inside/outside the US, not the amount of days.
               <br />
               (e.g: a trip from April 1st to April 3rd will be counted as a three days trip)
               <br />
@@ -254,14 +254,14 @@ export function InfoDialog(props) {
               This shows up in your I94 with the folowing travel checks: <br /> {
                 renderTravelCheck({date: moment('2017/04/01'),
                 location: 'MIA', type: 'DEP'})
-              } and {
+              }(Departure) and {
                 renderTravelCheck({date: moment('2017/04/05'),
                 location: 'MIA', type: 'ARR'})
-              }
+              } (Arrival)
               <br /><br />
-              The total count of days outside the US in 2017 is 5 days: <b>you were traveling</b> (2) <b>or outside</b> (3) the US during 5 days. 
+              The total count of days outside the US in 2017 is 5 days: <b>you were traveling</b> for 2 days <b>and outside</b> the US for 3 days. 
               <br />
-              The total count of days inside the US in 2017 is 362 days: <b>you were traveling</b> (2) <b>or inside</b> (360) the US during 362 days.
+              The total count of days inside the US in 2017 is 362 days: <b>you were traveling</b> for 2 days <b>and inside</b> the US during 360 days.
               <br />
               You may notice that 5 + 362 = 367, even though there are only 365 days in 2017.
               That's because the days you traveled were counted twice, that's expected.
