@@ -94,7 +94,6 @@ export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWin
         newTravelChecks.unshift({
             location: newTravelChecks[0].type === 'DEP' ? 'USA' : 'Abroad',
             type: newTravelChecks[0].type === 'DEP' ? 'ARR' : 'DEP',
-            // date: new Intl.DateTimeFormat("en-US").format(new Date(dateWindowStop))
             date: dateWindowStop,
             isAdditionalDateWindowStopCheck: true
         })
@@ -103,7 +102,6 @@ export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWin
         newTravelChecks.push({
             location: newTravelChecks[newTravelChecks.length - 1].type === 'DEP' ? 'USA' : 'Abroad',
             type: newTravelChecks[newTravelChecks.length - 1].type === 'DEP' ? 'ARR' : 'DEP',
-            // date: new Intl.DateTimeFormat("en-US").format(new Date(dateWindowStart)),
             date: dateWindowStart,
             isAdditionalDateWindowStartCheck: true
         })
@@ -126,13 +124,6 @@ export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWin
         if (travelDurationNoDateWindow - travelDurationDateWindow > 0){
             travelTitle = `${travelTitle} (${travelDurationNoDateWindow - travelDurationDateWindow} days outside selected period)`
         }
-        // If the travel is completing a time window, its message will be updated
-        // if (checkA['isAdditionalDateWindowStartCheck']){
-        //     travelTitle = `${travelTitle} <br /> (New travel added to fill space between the beginning of the selected period and the first travel)`
-        // }
-        // if (checkB['isAdditionalDateWindowStopCheck']){
-        //     travelTitle = `${travelTitle} <br /> (New travel added to fill space between the last travel and the end of the selected period)`
-        // }
 
         // Create a new travel object
         newTravel = {
@@ -140,9 +131,7 @@ export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWin
             type: "range",
             title: travelTitle,
             content: `From ${checkA['location']} to ${checkB['location']}: ${travelDurationDateWindow} days`,
-            // start: new Intl.DateTimeFormat("en-US").format(new Date(checkA.date)),
             start: checkA.date,
-            // end: new Intl.DateTimeFormat("en-US").format(new Date(checkB.date)),
             end: checkB.date,
             duration: travelDurationNoDateWindow,
             durationDateWindow: travelDurationDateWindow
@@ -157,10 +146,6 @@ export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWin
             newTravel['group'] = 1 // Inside
             travels.push(newTravel)
         }else{
-            console.log(checkA.date)
-            // message = `${message} Travel checks <b>${moment(checkA.date).format('YYYY/MM/DD')}</b> at <b>${checkA.location}</b>`
-            // message = `${message} and ${moment(checkA.date).format('YYYY/MM/DD')} at ${checkA.location}`
-            // message = 
             errors.push({
                 travelChecks: [checkA, checkB],
                 message: `should be consecutive Arrivals and Departures`

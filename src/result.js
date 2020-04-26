@@ -11,12 +11,19 @@ import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
 import ReactJoin from 'react-join'
 import ErrorIcon from '@material-ui/icons/Error';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
 import Chip from '@material-ui/core/Chip';
+
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Paper from '@material-ui/core/Paper';
 
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -95,11 +102,7 @@ export function ParsingErrors(props) {
           </Toolbar>
       </AppBar>
       <Card className={classes.root}>
-          {/* <CardContent>
-            <Typography color="textPrimary" gutterBottom> */}
                 { renderParsingErrors(props.errors, classes) }
-            {/* </Typography>
-          </CardContent> */}
       </Card>
   </Box>
   </Grid>
@@ -122,17 +125,48 @@ export function Result(props) {
   const classes = useStyles(props);
   let content = 
   <CardContent>
-    <Typography className={classes.title} color="textSecondary" gutterBottom>
-        Total days inside the US: { props.totalDaysInside }
-    </Typography>
-    <Typography className={classes.title} color="textSecondary" gutterBottom>
-        Total days outside the US:  { props.totalDaysOutside }
-    </Typography>
-    <Typography className={classes.title} color="textSecondary" gutterBottom>
-        Total days in window: { props.totalDaysWindow }
-    </Typography>
+    <TableContainer component={Paper}>
+      <Table className={classes.table} aria-label="simple table">
+        <TableBody>
+            <TableRow key="inside-count">
+              <TableCell component="th" scope="row">
+                Total days inside the US:
+              </TableCell>
+              <TableCell/>
+              <TableCell align="right">{props.totalDaysInside}</TableCell>
+            </TableRow>
+            <TableRow key="outside-count">
+              <TableCell component="th" scope="row">
+                Total days outside the US:
+              </TableCell>
+              <TableCell/>
+              <TableCell align="right">{props.totalDaysOutside}</TableCell>
+            </TableRow>
+            <TableRow key="window-count">
+              <TableCell component="th" scope="row">
+                Total days in window:
+              </TableCell>
+              <TableCell/>
+              <TableCell align="right">{props.totalDaysWindow}</TableCell>
+            </TableRow>
+            <TableRow key="window-period">
+              <TableCell component="th" scope="row">
+                Selected period
+              </TableCell>
+              <TableCell align="left">
+              From { moment(props.dateWindowStart).format('YYYY/MM/DD') }
+              </TableCell>
+              <TableCell align="left">
+              To { moment(props.dateWindowStop).format('YYYY/MM/DD') }
+              </TableCell>
+            </TableRow>
+        </TableBody>
+      </Table>
+    </TableContainer>
     <CardActions>
-      <Button size="small" variant="contained" onClick={handleClickOpen('paper')}>How does it work?</Button>
+      <Button align="center" size="small"  color="primary" variant="contained" onClick={handleClickOpen('paper')}>
+        More information
+      </Button>
     </CardActions>
     <InfoDialog handleClickOpen={handleClickOpen} handleClose={handleClose} open={open} />
   </CardContent>
@@ -184,7 +218,7 @@ export function InfoDialog(props) {
         aria-labelledby="scroll-dialog-title"
         aria-describedby="scroll-dialog-description"
       >
-        <DialogTitle id="scroll-dialog-title">Information</DialogTitle>
+        <DialogTitle id="scroll-dialog-title">Additional Information</DialogTitle>
         <DialogContent dividers={props.scroll === 'paper'}>
           <DialogContentText
             id="scroll-dialog-description"

@@ -23,6 +23,13 @@ import { InputFormDialog } from './input_form_dialog.js'
 import { sortTravelChecks, processRawInput, computeTravelDurationDays, sumTravelDaysInside, sumTravelDaysOutside, travelChecksToTravelsList } from './utils.js';
 import { Result, ParsingErrors } from './result.js'
 
+const processingFunctionInfos={
+    "i94": <span> Copy and paste data from the table on the
+            <a href="https://i94.cbp.dhs.gov/I94/#/history-search"> official i94 website </a>
+        </span>,
+    "tabular": <span> Copy and paste data from an Excel table </span>
+}
+
 class App extends React.Component {
     constructor(props) {
         super(props);
@@ -174,6 +181,7 @@ class App extends React.Component {
                 handleNewRawInput={this.handleNewRawInput}
                 handleProcessNewRawInput={this.handleProcessNewRawInput}
                 processingFunction={this.state.processingFunction}
+                processingFunctionInfo={processingFunctionInfos[this.state.processingFunction]}
                 handleProcessingFunctionChange={this.handleProcessingFunctionChange} />
             
             <Grid container item xs={10} spacing={3} direction="row" alignItems="center" justify="center">
@@ -217,6 +225,8 @@ class App extends React.Component {
                         handleWindowStopChange={ this.handleWindowStopChange } 
                         fitDateWindow = { this.fitDateWindow }/>
                     <Result
+                        dateWindowStart={this.state.dateWindowStart}
+                        dateWindowStop={this.state.dateWindowStop}
                         totalDaysInside={sumTravelDaysInside(this.computeTravels())}
                         totalDaysOutside={sumTravelDaysOutside(this.computeTravels())}
                         totalDaysWindow={computeTravelDurationDays(this.state.dateWindowStart, this.state.dateWindowStop)}

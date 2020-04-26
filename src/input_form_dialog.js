@@ -19,6 +19,13 @@ export class InputFormDialog extends React.PureComponent {
             <DialogContent>
             <form onSubmit={this.props.handleProcessNewRawInput} >
             <Grid container>
+                <Grid item xs={12}>
+                    <Typography component="p" color="textSecondary">
+                        Copy and paste your travel data in the input field, select the corresponding import format and press Import.
+                        <br />
+                        Nothing about you or any travel history is collected and sent anywhere: privacy is guaranteed.
+                    </Typography>
+                </Grid>
                 <Grid item xs={8}>
                     <TextField
                         autoFocus
@@ -26,7 +33,7 @@ export class InputFormDialog extends React.PureComponent {
                         id="standard-multiline-flexible"
                         label="Paste input data here:"
                         multiline
-                        rows={8}
+                        rows={10}
                         fullWidth
                         name='rawInput'
                         size="small"
@@ -36,18 +43,23 @@ export class InputFormDialog extends React.PureComponent {
                 <Grid item container xs={4}>
                     <Grid item xs={12}>
                         <Typography id="discrete-slider-small-steps" gutterBottom>
-                        Select the import format:
+                            Select the import format:
                         </Typography>
                         <Select value={this.props.processingFunction} onChange={this.props.handleProcessingFunctionChange}>
                             <MenuItem value='i94'>I94 website format</MenuItem>
                             <MenuItem value='tabular'>Tabular copy paste format</MenuItem>
                         </Select>
                     </Grid>
-                    <Grid>
+                    <Grid item>
+                    <Typography component="p">
+                        {this.props.processingFunctionInfo}
+                    </Typography>
+                    </Grid>
+                    <Grid item>
                         <Button type='submit' onClick={this.props.hideModalHandler}
                             variant="contained"
                             color="primary"
-                            size="large"> Process new raw input</Button>
+                            size="large">Import</Button>
                     </Grid>
                     </Grid>
                 </Grid>
