@@ -180,7 +180,7 @@ class App extends React.Component {
             <Grid container item xs={12} spacing={3} direction="row" alignItems="center" justify="space-between">
                 <Grid item>
                     <Typography  component="h1" variant="h6" color="inherit" noWrap>
-                        US Travels calculator
+                    ✈️ US Travel History Calculator
                     </Typography>
                 </Grid>
                 <Grid item>
