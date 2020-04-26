@@ -131,7 +131,7 @@ class App extends React.Component {
         this.setState(
             {
                 travels: travelsComputeResult['travels'],
-                travelsParseMessage: travelsComputeResult['messages']
+                travelsParserErrors: travelsComputeResult['errors']
             }
         )
     }
@@ -207,7 +207,7 @@ class App extends React.Component {
             <Grid container item spacing={3} justify="space-between" alignItems="center">
                 <Grid container item xs={7} direction="column">
                     <TravelChecksList travelChecks={ this.state.travelChecks } updateTravelChecks={this.updateTravelChecks} />
-                    <ParsingErrors messages={this.state.travelsParseMessage} />
+                    <ParsingErrors errors={this.state.travelsParserErrors} />
                 </Grid>
                 <Grid container item xs={5} direction="column" spacing={3}>
                     <DateWindow
@@ -219,7 +219,8 @@ class App extends React.Component {
                     <Result
                         totalDaysInside={sumTravelDaysInside(this.computeTravels())}
                         totalDaysOutside={sumTravelDaysOutside(this.computeTravels())}
-                        totalDaysWindow={computeTravelDurationDays(this.state.dateWindowStart, this.state.dateWindowStop)} />
+                        totalDaysWindow={computeTravelDurationDays(this.state.dateWindowStart, this.state.dateWindowStop)}
+                        totalErrors={ this.state.travelsParserErrors === undefined ? 0 : this.state.travelsParserErrors.length  } />
                 </Grid>
                 <TravelsTimeline travels={this.computeTravels()}
                     travelChecks={this.state.travelChecks} dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>

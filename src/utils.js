@@ -113,10 +113,8 @@ export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWin
     let newTravel = {}
     let checkA, checkB, travelTitle, travelDurationDateWindow, travelDurationNoDateWindow
     let index = 0
-    let messages = []
-    let message = ""
+    let errors = []
     while(newTravelChecks.length > 1){
-        message = ""
         checkA = newTravelChecks.pop(0)
         checkB = newTravelChecks[newTravelChecks.length - 1]
 
@@ -160,13 +158,16 @@ export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWin
             travels.push(newTravel)
         }else{
             console.log(checkA.date)
-            message = `${message} Travel checks ${checkA.location}:${checkA.date}`
-            message = `${message} and ${checkB.location}:${checkB.date}`
-            message = `${message} should be consecutive Departures and Arrivals`
-            messages.push(message)
+            // message = `${message} Travel checks <b>${moment(checkA.date).format('YYYY/MM/DD')}</b> at <b>${checkA.location}</b>`
+            // message = `${message} and ${moment(checkA.date).format('YYYY/MM/DD')} at ${checkA.location}`
+            // message = 
+            errors.push({
+                travelChecks: [checkA, checkB],
+                message: `should be consecutive Departures and Arrivals`
+            })
         }
     }
 
-    return {travels: travels, messages: messages}
+    return {travels: travels, errors: errors}
 
 }

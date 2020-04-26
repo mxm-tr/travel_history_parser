@@ -15,6 +15,7 @@
     "material-ui": "^0.20.2",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
+    "react-join": "^1.1.4",
     "react-scripts": "3.4.0",
     "react-visjs-timeline": "^1.6.0",
     "typescript": "^3.8.3",
