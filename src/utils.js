@@ -4,27 +4,49 @@ import max from 'date-fns/max';
 import min from 'date-fns/min';
 import moment from 'moment';
 
+export const travelTypes = {
+    'Outside': 2,
+    'Inside': 1
+}
+
 export function sortTravelChecks(travelChecks){
     let newList = Array.from(travelChecks)
-    newList.sort((a,b) => a.date - b.date)
+    newList.sort((a,b) => moment(a.date) - moment(b.date))
     return newList
 }
 
-export function sumTravelDays(travelsList){
-    if (travelsList.length < 1){
+export function sumTravelDays(travelsList, travelTypesFilter){
+
+    const selectedTravels = travelsList.filter((t) => t['durationDateWindow'] > 0)
+
+    if (selectedTravels.length < 1){
         return 0
     }
-    const allDates = travelsList.map((t) => t.start).concat(travelsList.map((t) => t.end))
-    const extraneousDays = allDates.sort().map((v, i) => i < allDates.length - 1 ? (isSameDay(v, allDates[i + 1]) ? 1 : 0) : 0 ).reduce((a,b) => a + b)
-    return Math.round(travelsList.map((a) => a['durationDateWindow']).reduce((a,b) => a + b, 0) - extraneousDays)
+
+    const allDatesInSelection = selectedTravels.map((t) => t.start).concat(selectedTravels.map((t) => t.end))
+    const extraneousDays = allDatesInSelection.sort().map((d, i) => {
+        if (i < allDatesInSelection.length - 1){
+            return isSameDay(d, allDatesInSelection[i + 1]) ? 1 : 0
+        } return 0
+     } ).reduce((a,b) => a + b)
+
+     let travelCountList = selectedTravels.map((t, i) => t['durationDateWindow'])
+     console.log(travelCountList, extraneousDays)
+
+     if (travelTypesFilter !== undefined){
+        travelCountList = selectedTravels.filter((t) => t['group'] === travelTypes[travelTypesFilter]).map(t => t['durationDateWindow'] )
+     }
+     console.log(travelCountList, extraneousDays)
+     return travelCountList.reduce((a,b) => a + b, - extraneousDays)
 }
 
+
 export function sumTravelDaysOutside(travelsList){
-    return sumTravelDays(travelsList.filter((t) => t['group'] === 2))
+    return sumTravelDays(travelsList, 'Outside')
 }
 
 export function sumTravelDaysInside(travelsList){
-    return sumTravelDays(travelsList.filter((t) => t['group'] === 1))
+    return sumTravelDays(travelsList, 'Inside')
 }
 
 export function processRawInput(rawInput, processingFunction='i94'){
@@ -51,22 +73,12 @@ export function computeTravelDurationDays(dateStart, dateStop, dateWindowStart, 
     const dateWindowStartD = moment(dateWindowStart)._d
     const dateWindowStopD = moment(dateWindowStop)._d
 
-    // console.log(dateStart, dateStop, dateWindowStart, dateWindowStop)
-    // console.log(dateStartD, dateStopD, dateWindowStartD, dateWindowStopD)
-
     if (dateWindowStart === undefined || dateWindowStop === undefined){
-        // return Math.round(Math.abs(new Date(dateStop) - new Date(dateStart)) / 1000 / 3600 / 24) + 1
         return Math.abs(differenceInDays(dateStartD, dateStopD)) + 1
     }
     if(dateStartD >= dateWindowStopD || dateStopD <= dateWindowStartD){
         return 0
     }
-
-    // return Math.round(new Date(Math.min(new Date(dateWindowStop), new Date(dateStop))) - new Date(Math.max(new Date(dateWindowStart), new Date(dateStart)))) / 1000 / 3600 / 24 + 1
-    // console.log(differenceInDays(
-    //     min([dateWindowStopD, dateStopD]),
-    //     max([dateWindowStartD, dateStartD])
-    // ))
 
     return differenceInDays(
         min([dateWindowStopD, dateStopD]),
@@ -139,11 +151,11 @@ export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWin
 
         if (checkA.type === 'DEP' && checkB.type === 'ARR') {
             index++
-            newTravel['group'] = 2 // Outside
+            newTravel['group'] = travelTypes['Outside'] // Outside
             travels.push(newTravel)
         }else if(checkA.type === 'ARR' && checkB.type === 'DEP'){
             index++
-            newTravel['group'] = 1 // Inside
+            newTravel['group'] = travelTypes["Inside"] // Inside
             travels.push(newTravel)
         }else{
             errors.push({

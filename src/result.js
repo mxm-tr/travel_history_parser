@@ -228,29 +228,22 @@ export function InfoDialog(props) {
             <Typography variant="h6" color="textPrimary">
               How to count the days?
             </Typography>
-            <Typography variant="p">
-              In most cases, the US immigration calculates travel durations with +1 day:
-              It counts the <b>amount of dates</b> you were inside/outside the US, not the amount of days.
+              <Typography variant="p">
+              In most cases the US immigration counts the travel days as days <b>inside the US</b>.
               <br />
-              (e.g: a trip from April 1st to April 3rd will be counted as a three-day trip)
               <br />
-              
-              <br />
-              <b>Departure and Arrival dates are counted both as Inside and Outside the US</b>:
-              Given a trip abroad from April 1st to April 3rd, three days will be counted as Outside the US.
-              <br/>
-              Also, April 1st and April 3rd will be counted as Inside the US since you were traveling on these dates.
-              <br/>
-              That's why the sum of days Inside and Outside the US during a year is not equal to 365 (or 366)!
-              <br/>
-              <br/>
 
-            </Typography>
+              <b>Example:</b>
+              <br />
+              Given a trip abroad from April 1st to April 3rd, two days will be counted as Inside the US, and 1 day Outside.
+              <br />
+              <br />
+              </Typography>
             <Typography variant="h6" color="textPrimary">
               Simple example with one trip:
             </Typography>
             <Typography variant="p">
-              Let's say you want to count your travel days in 2017 and the only trip you had
+              Let's say you want to count your travel days in <b>2017</b> and the only trip you had
               was in Mexico on April 1st 2017, and you came back April 5th 2017. <br /> <br />
               This shows up in your I94 with the following travel checks: <br /> {
                 renderTravelCheck({date: moment('2017/04/01'),
@@ -260,12 +253,11 @@ export function InfoDialog(props) {
                 location: 'MIA', type: 'ARR'})
               } (Arrival)
               <br /><br />
-              The total count of days outside the US in 2017 is 5 days: <b>you were traveling</b> for 2 days <b>and outside</b> the US for 3 days. 
+              The total count of days outside the US in 2017 is 3 days: <b>you were traveling</b> for 2 days <b>and outside</b> the US for 3 days. 
               <br />
               The total count of days inside the US in 2017 is 362 days: <b>you were traveling</b> for 2 days <b>and inside</b> the US during 360 days.
               <br />
-              You may notice that 5 + 362 = 367, even though there are only 365 days in 2017.
-              That's because the days you traveled were counted twice, that's expected.
+              You may check your result with 3 + 362 = 365, there are 365 days in 2017.
             </Typography>
           </DialogContentText>
         </DialogContent>
