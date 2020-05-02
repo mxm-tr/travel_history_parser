@@ -89,7 +89,7 @@ export function InfoDialog(props) {
                 </Typography>
                 <Typography variant="p">
                     This tool has been created to help US Non Residents to fill their paperwork:
-                    the US administration sometimes require a calculation of the total amount of days spent on US soil.
+                    the US administration sometimes require a calculation of the total amount of days spent on US territory.
                     This can be long and difficult to do, especially if you travel a lot.
                     <br />
                     <br />
@@ -102,7 +102,7 @@ export function InfoDialog(props) {
                     What about my privacy?
                 </Typography>
                 <Typography variant="p">
-                    Just like a calculator, this tool is a standalone app: it doesn't communicate any information you fill in.
+                    Just like a calculator, this tool is a standalone app: it doesn't send any information you fill in on the internet.
                     <br />
                     <br />
                 </Typography>
@@ -116,7 +116,7 @@ export function InfoDialog(props) {
                 <b>Example:</b>
                 <br />
                 Let's say you want to count your travel days in <b>2017</b>. The only trip you had
-                was in Mexico on April 1st 2017, and you came back April 5th 2017. <br /> <br />
+                was in Mexico on April 1st 2017, and you came back on April 5th 2017. <br /> <br />
                 This shows up in your I94 with the following travel checks: <br /> {
                   renderTravelCheck({date: moment('2017-04-01'),
                   location: 'MIA', type: 'DEP'})
@@ -134,7 +134,7 @@ export function InfoDialog(props) {
                 <br />
               </Typography>
               <Typography variant="h6" color="textPrimary">
-                Something does not work !
+                Something does not work!
               </Typography>
                 <Typography variant="p">
                     You are more than welcome to report any issue on the <a href="https://github.com/mxm-tr/travel_history_parser">github account of the app</a>.
