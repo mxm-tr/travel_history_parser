@@ -2,10 +2,9 @@
 import {
     sortTravelChecks,
     travelTypes,
+    computeTravelDurationDays,
     travelChecksToTravelsList,
     sumTravelDaysInside,
-    sumTravelDaysOutside,
-    sumTravelDays
 } from "../utils.js";
 
 import { validTravelChecksUnordered,
@@ -15,6 +14,8 @@ import { validTravelChecksUnordered,
     testTravelsTimeWindows
 } from "./test_data.js";
 
+import { moment } from 'moment';
+
 test('Travel ordering function', () => {
     expect(sortTravelChecks(
         validTravelChecksUnordered
@@ -22,24 +23,18 @@ test('Travel ordering function', () => {
   });
 
 
-  test('Travel checks to travels function, no time window', () => {
+test('Time difference function', () => {
+    expect(computeTravelDurationDays('2017-01-01', '2017-12-31')).toStrictEqual(365);
+    expect(computeTravelDurationDays('2017-01-01', '2017-04-15')).toStrictEqual(105);
+    expect(computeTravelDurationDays('2017-04-20', '2017-12-31')).toStrictEqual(256);
+});
+
+test('Travel checks to travels function, no time window', () => {
     const result=travelChecksToTravelsList(
         validTravelChecksUnordered
     )
     expect(result["travels"]).toStrictEqual(validTravelsNoTimeWindow);
     expect(result["errors"]).toStrictEqual([]);
-  });
-
-test('Sum travels function, no time window', () => {
-    expect(sumTravelDaysInside(
-        validTravelsNoTimeWindow)
-    ).toStrictEqual(validTotalDaysCountNoTimeWindow['Inside']);
-    expect(sumTravelDaysOutside(
-        validTravelsNoTimeWindow)
-    ).toStrictEqual(validTotalDaysCountNoTimeWindow['Outside']);
-    expect(sumTravelDays(
-        validTravelsNoTimeWindow)
-    ).toStrictEqual(validTotalDaysCountNoTimeWindow['Total']);
   });
 
 test('Travel checks to travels function, with time window', () => {
@@ -59,16 +54,19 @@ test('Travel checks to travels function, with time window', () => {
 
 test('Sum travels function, with time window', () => {
     testTravelsTimeWindows.forEach(test => {
-        expect(sumTravelDaysInside(
-            test['travels'])
+        let sumTravelsInside = sumTravelDaysInside(test['travels'])
+
+        // Test inside days computation
+        expect(sumTravelsInside
         ).toStrictEqual(test['totalDaysCount']['Inside']);
-        expect(sumTravelDaysOutside(
-            test['travels'])
-        ).toStrictEqual(test['totalDaysCount']['Outside']);
-        expect(sumTravelDays(
-            test['travels'])
+
+        // Test total days
+        expect(computeTravelDurationDays(test["dateWindowStart"], test["dateWindowStop"])
         ).toStrictEqual(test['totalDaysCount']['Total']);
+
+        // Test outside = Total days - Inside days
+        expect(test['totalDaysCount']['Total'] - sumTravelsInside
+        ).toStrictEqual(test['totalDaysCount']['Outside']);
     });
 
   });
-

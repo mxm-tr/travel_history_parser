@@ -8,44 +8,44 @@ export const validTravelChecksUnordered = [
     {
         "location": "DLA",
         "type": "ARR",
-        "date": "2017/05/30",
+        "date": "2017-05-30",
     },
     {
         "location": "RRA",
         "type": "ARR",
-        "date": "2017/03/30",
+        "date": "2017-03-30",
     },
     {
         "location": "DUL",
         "type": "DEP",
-        "date": "2017/06/30",
+        "date": "2017-06-30",
     },
     {
         "location": "BWI",
         "type": "DEP",
-        "date": "2017/03/31",
+        "date": "2017-03-31",
     }]
 
 export const validTravelChecksOrdered = [
     {
         "location": "RRA",
         "type": "ARR",
-        "date": "2017/03/30",
+        "date": "2017-03-30",
     },
     {
         "location": "BWI",
         "type": "DEP",
-        "date": "2017/03/31",
+        "date": "2017-03-31",
     },
     {
         "location": "DLA",
         "type": "ARR",
-        "date": "2017/05/30",
+        "date": "2017-05-30",
     },
     {
         "location": "DUL",
         "type": "DEP",
-        "date": "2017/06/30",
+        "date": "2017-06-30",
     },
 ]
 
@@ -55,8 +55,8 @@ export const validTravelsNoTimeWindow = [
         type: "range",
         title: `From RRA to BWI: 2 days`,
         content: `From RRA to BWI: 2 days`,
-        start: "2017/03/30",
-        end: "2017/03/31",
+        start: "2017-03-30",
+        end: "2017-03-31",
         group: travelTypes["Inside"],
         duration: 2,
         durationDateWindow: 2
@@ -66,8 +66,8 @@ export const validTravelsNoTimeWindow = [
         type: "range",
         title: `From BWI to DLA: 61 days`,
         content: `From BWI to DLA: 61 days`,
-        start: "2017/03/31",
-        end: "2017/05/30",
+        start: "2017-03-31",
+        end: "2017-05-30",
         group: travelTypes["Outside"],
         duration: 61,
         durationDateWindow: 61
@@ -77,8 +77,8 @@ export const validTravelsNoTimeWindow = [
         type: "range",
         title: `From DLA to DUL: 32 days`,
         content: `From DLA to DUL: 32 days`,
-        start: "2017/05/30",
-        end: "2017/06/30",
+        start: "2017-05-30",
+        end: "2017-06-30",
         group: travelTypes["Inside"],
         duration: 32,
         durationDateWindow: 32
@@ -94,18 +94,18 @@ export const validTotalDaysCountNoTimeWindow = {
 
 export const testTravelsTimeWindows = [
     {
-        dateWindowStart: "2017/01/01",
-        dateWindowStop: "2017/04/15",
+        dateWindowStart: "2017-01-01",
+        dateWindowStop: "2017-04-15",
         travels: [
             {
                 "id": 0,
-                "content": "From Abroad to RRA: 88 days",
-                "duration": 88,
-                "durationDateWindow": 88,
-                "end": "2017/03/30",
+                "content": "From Abroad to RRA: 89 days",
+                "duration": 89,
+                "durationDateWindow": 89,
+                "end": "2017-03-30",
                 "group": travelTypes["Outside"],
-                "start": "2017/01/01",
-                "title": "From Abroad to RRA: 88 days",
+                "start": "2017-01-01",
+                "title": "From Abroad to RRA: 89 days",
                 "type": "range",
             },
             {
@@ -113,8 +113,8 @@ export const testTravelsTimeWindows = [
                 type: "range",
                 title: `From RRA to BWI: 2 days`,
                 content: `From RRA to BWI: 2 days`,
-                start: "2017/03/30",
-                end: "2017/03/31",
+                start: "2017-03-30",
+                end: "2017-03-31",
                 group: travelTypes["Inside"],
                 duration: 2,
                 durationDateWindow: 2
@@ -124,8 +124,8 @@ export const testTravelsTimeWindows = [
                 type: "range",
                 title: `From BWI to DLA: 16 days (45 days outside selected period)`,
                 content: `From BWI to DLA: 16 days`,
-                start: "2017/03/31",
-                end: "2017/05/30",
+                start: "2017-03-31",
+                end: "2017-05-30",
                 group: travelTypes["Outside"],
                 duration: 61,
                 durationDateWindow: 16
@@ -135,8 +135,8 @@ export const testTravelsTimeWindows = [
                 type: "range",
                 title: `From DLA to DUL: 0 days (32 days outside selected period)`,
                 content: `From DLA to DUL: 0 days`,
-                start: "2017/05/30",
-                end: "2017/06/30",
+                start: "2017-05-30",
+                end: "2017-06-30",
                 group: travelTypes["Inside"],
                 duration: 32,
                 durationDateWindow: 0
@@ -144,21 +144,21 @@ export const testTravelsTimeWindows = [
     ],
     totalDaysCount: {
         'Inside': 2,
-        'Outside': 100,
-        'Total':  102
+        'Outside': 103,
+        'Total':  105
     }
 },
 {
-    dateWindowStart: "2017/04/20",
-    dateWindowStop: "2017/12/31",
+    dateWindowStart: "2017-04-20",
+    dateWindowStop: "2017-12-31",
     travels: [
         {
             id: 0,
             type: "range",
             title: `From RRA to BWI: 0 days (2 days outside selected period)`,
             content: `From RRA to BWI: 0 days`,
-            start: "2017/03/30",
-            end: "2017/03/31",
+            start: "2017-03-30",
+            end: "2017-03-31",
             group: travelTypes["Inside"],
             duration: 2,
             durationDateWindow: 0
@@ -168,8 +168,8 @@ export const testTravelsTimeWindows = [
             type: "range",
             title: `From BWI to DLA: 41 days (20 days outside selected period)`,
             content: `From BWI to DLA: 41 days`,
-            start: "2017/03/31",
-            end: "2017/05/30",
+            start: "2017-03-31",
+            end: "2017-05-30",
             group: travelTypes["Outside"],
             duration: 61,
             durationDateWindow: 41
@@ -179,8 +179,8 @@ export const testTravelsTimeWindows = [
             type: "range",
             title: `From DLA to DUL: 32 days`,
             content: `From DLA to DUL: 32 days`,
-            start: "2017/05/30",
-            end: "2017/06/30",
+            start: "2017-05-30",
+            end: "2017-06-30",
             group: travelTypes["Inside"],
             duration: 32,
             durationDateWindow: 32
@@ -190,17 +190,17 @@ export const testTravelsTimeWindows = [
             "content": "From DUL to USA: 185 days",
             "duration": 185,
             "durationDateWindow": 185,
-            "end": "2017/12/31",
+            "end": "2017-12-31",
             "group": travelTypes["Outside"],
-            "start": "2017/06/30",
+            "start": "2017-06-30",
             "title": "From DUL to USA: 185 days",
             "type": "range",
         },
 ],
 totalDaysCount: {
     'Inside': 32,
-    'Outside': 222,
-    'Total':  254
+    'Outside': 224,
+    'Total':  256
 }
 }
 ]

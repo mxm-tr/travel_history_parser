@@ -3,7 +3,6 @@ import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import CardActions from '@material-ui/core/CardActions';
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -21,7 +20,6 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
@@ -34,8 +32,9 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 
 import moment from 'moment'
 import { makeStyles } from '@material-ui/styles';
+import { dateToDateString } from './utils';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
     chip: {
       margin: '0px 5px 0px 5px',
     },
@@ -47,9 +46,9 @@ const useStyles = makeStyles((theme) => ({
 export function renderTravelCheck(tc, classes){
   return(
     <Chip
-      icon={ tc.type == 'DEP' ? <ArrowUpward/> : <ArrowDownward />}
+      icon={ tc.type === 'DEP' ? <ArrowUpward/> : <ArrowDownward />}
       className={ classes ? classes.chip : "" }
-      label={ `${moment(tc.date).format('YYYY/MM/DD')} : ${tc.location}` } />
+      label={ `${ dateToDateString(tc.date) } : ${tc.location}` } />
   )
 }
 
@@ -111,7 +110,7 @@ export function ParsingErrors(props) {
 
 export function Result(props) {
   const [open, setOpen] = React.useState(false);
-  const [scroll, setScroll] = React.useState('paper');
+  const [, setScroll] = React.useState('paper');
 
   const handleClickOpen = (scrollType) => () => {
     setOpen(true);
@@ -159,10 +158,10 @@ export function Result(props) {
                 Selected period
               </TableCell>
               <TableCell align="left">
-              From { moment(props.dateWindowStart).format('YYYY/MM/DD') }
+              From { dateToDateString(props.dateWindowStart) }
               </TableCell>
               <TableCell align="left">
-              To { moment(props.dateWindowStop).format('YYYY/MM/DD') }
+              To { dateToDateString(props.dateWindowStop) }
               </TableCell>
             </TableRow>
         </TableBody>
@@ -226,7 +225,7 @@ export function InfoDialog(props) {
             tabIndex={-1}
           >
             <Typography variant="h6" color="textPrimary">
-              How to count the days?
+              How does it work?
             </Typography>
               <Typography variant="p">
               In most cases the US immigration counts the travel days as days <b>inside the US</b>.
@@ -243,13 +242,13 @@ export function InfoDialog(props) {
               Simple example with one trip:
             </Typography>
             <Typography variant="p">
-              Let's say you want to count your travel days in <b>2017</b> and the only trip you had
+              Let's say you want to count your travel days in <b>2017</b>. The only trip you had
               was in Mexico on April 1st 2017, and you came back April 5th 2017. <br /> <br />
               This shows up in your I94 with the following travel checks: <br /> {
-                renderTravelCheck({date: moment('2017/04/01'),
+                renderTravelCheck({date: moment('2017-04-01'),
                 location: 'MIA', type: 'DEP'})
               }(Departure) and {
-                renderTravelCheck({date: moment('2017/04/05'),
+                renderTravelCheck({date: moment('2017-04-05'),
                 location: 'MIA', type: 'ARR'})
               } (Arrival)
               <br /><br />
