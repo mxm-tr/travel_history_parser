@@ -1,30 +1,25 @@
-import differenceInDays from 'date-fns/differenceInDays';
-import isSameDay from 'date-fns/isSameDay';
-import max from 'date-fns/max';
-import min from 'date-fns/min';
 import moment from 'moment';
+
+export const travelTypes = {
+    'Outside': 2,
+    'Inside': 1
+}
 
 export function sortTravelChecks(travelChecks){
     let newList = Array.from(travelChecks)
-    newList.sort((a,b) => a.date - b.date)
+    newList.sort((a,b) => moment(a.date) - moment(b.date))
     return newList
 }
 
-export function sumTravelDays(travelsList){
-    if (travelsList.length < 1){
+export function sumTravelDaysInside(travelsList){
+
+    const selectedTravels = travelsList.filter((t) => t['group'] === travelTypes["Inside"])
+
+    if (selectedTravels.length < 1){
         return 0
     }
-    const allDates = travelsList.map((t) => t.start).concat(travelsList.map((t) => t.end))
-    const extraneousDays = allDates.sort().map((v, i) => i < allDates.length - 1 ? (isSameDay(v, allDates[i + 1]) ? 1 : 0) : 0 ).reduce((a,b) => a + b)
-    return Math.round(travelsList.map((a) => a['durationDateWindow']).reduce((a,b) => a + b, 0) - extraneousDays)
-}
 
-export function sumTravelDaysOutside(travelsList){
-    return sumTravelDays(travelsList.filter((t) => t['group'] === 2))
-}
-
-export function sumTravelDaysInside(travelsList){
-    return sumTravelDays(travelsList.filter((t) => t['group'] === 1))
+     return selectedTravels.map((t) => t['durationDateWindow']).reduce((a,b) => a + b, 0)
 }
 
 export function processRawInput(rawInput, processingFunction='i94'){
@@ -45,33 +40,31 @@ export function processRawInput(rawInput, processingFunction='i94'){
     }
 }
 
-export function computeTravelDurationDays(dateStart, dateStop, dateWindowStart, dateWindowStop){
-    const dateStartD = moment(dateStart)._d
-    const dateStopD = moment(dateStop)._d
-    const dateWindowStartD = moment(dateWindowStart)._d
-    const dateWindowStopD = moment(dateWindowStop)._d
+export function dateStringToDate(dateStr){
+    if(dateStr === undefined){
+        return undefined
+    }
+    return new moment(dateStr);
+}
 
-    // console.log(dateStart, dateStop, dateWindowStart, dateWindowStop)
-    // console.log(dateStartD, dateStopD, dateWindowStartD, dateWindowStopD)
+export function dateToDateString(date){
+    return moment(date).format('YYYY-MM-DD')
+}
+
+export function computeTravelDurationDays(dateStart, dateStop, dateWindowStart, dateWindowStop){
+    const dateStartD = dateStringToDate(dateStart)
+    const dateStopD = dateStringToDate(dateStop)
+    const dateWindowStartD = dateStringToDate(dateWindowStart)
+    const dateWindowStopD = dateStringToDate(dateWindowStop)
 
     if (dateWindowStart === undefined || dateWindowStop === undefined){
-        // return Math.round(Math.abs(new Date(dateStop) - new Date(dateStart)) / 1000 / 3600 / 24) + 1
-        return Math.abs(differenceInDays(dateStartD, dateStopD)) + 1
+        return Math.abs(dateStopD.diff(dateStartD, 'days')) + 1
     }
     if(dateStartD >= dateWindowStopD || dateStopD <= dateWindowStartD){
         return 0
     }
 
-    // return Math.round(new Date(Math.min(new Date(dateWindowStop), new Date(dateStop))) - new Date(Math.max(new Date(dateWindowStart), new Date(dateStart)))) / 1000 / 3600 / 24 + 1
-    // console.log(differenceInDays(
-    //     min([dateWindowStopD, dateStopD]),
-    //     max([dateWindowStartD, dateStartD])
-    // ))
-
-    return differenceInDays(
-        min([dateWindowStopD, dateStopD]),
-        max([dateWindowStartD, dateStartD])
-    ) + 1
+    return moment.min(dateWindowStopD, dateStopD).diff(moment.max(dateWindowStartD, dateStartD), 'days') + 1
 }
 
 export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWindowStop){
@@ -139,11 +132,11 @@ export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWin
 
         if (checkA.type === 'DEP' && checkB.type === 'ARR') {
             index++
-            newTravel['group'] = 2 // Outside
+            newTravel['group'] = travelTypes['Outside'] // Outside
             travels.push(newTravel)
         }else if(checkA.type === 'ARR' && checkB.type === 'DEP'){
             index++
-            newTravel['group'] = 1 // Inside
+            newTravel['group'] = travelTypes["Inside"] // Inside
             travels.push(newTravel)
         }else{
             errors.push({

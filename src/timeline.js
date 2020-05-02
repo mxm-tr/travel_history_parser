@@ -8,7 +8,9 @@ import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import { renderTravelCheck } from './result';
-import moment from 'moment';
+
+import { dateToDateString } from './utils.js'
+
 
 class TravelsTimeline extends React.PureComponent {
     // http://visjs.org/docs/timeline/#Configuration_Options
@@ -41,10 +43,10 @@ class TravelsTimeline extends React.PureComponent {
             template: function (item, element, data) {
                 let content = ""
                 if(item.travelCheck === undefined){
-                    if(item.type == "background"){
+                    if(item.type === "background"){
                         content = "Selected period"
                     }else{
-                        content = `From ${moment(data.start).format('YYYY/MM/DD')} to ${moment(data.end).format('YYYY/MM/DD')}`
+                        content = `From ${ dateToDateString(data.start) } to ${ dateToDateString(data.end) }`
                     }
                     return content 
                 }else{
@@ -72,7 +74,7 @@ class TravelsTimeline extends React.PureComponent {
         }
 
         // Set up points to display the checks
-        let travelChecksPoints = this.props.travelChecks.map((check, index) => new Object({
+        let travelChecksPoints = this.props.travelChecks.map((check, index) => { return {
             id: this.props.travels.length + index + 2,
             type: "point",
             title: `${check['type']} ${check['location']} : ${check['date']}`,
@@ -81,7 +83,7 @@ class TravelsTimeline extends React.PureComponent {
             // group: check['type'] === 'DEP' ? 2 : 1
             group: 3,
             travelCheck: check
-        }))
+        }})
 
         //  Display the travel window limits
         // travelChecksPoints = travelChecksPoints.concat(

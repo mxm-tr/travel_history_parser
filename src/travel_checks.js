@@ -3,10 +3,10 @@ import { tableIcons } from './icons.js'
 import Grid from '@material-ui/core/Grid';
 import { makeStyles } from '@material-ui/styles';
 import MaterialTable from 'material-table';
-import moment from 'moment';
 import Card from '@material-ui/core/Card';
 
 import './travel_checks.css'
+import { dateToDateString } from './utils.js';
 
 const useStyles = makeStyles({
     blueBackground: {
@@ -34,7 +34,7 @@ export function TravelChecksList(props) {
             <MaterialTable
                 icons={tableIcons}
                 columns={[
-                        { title: 'Date', field: 'date', type: 'date',  filtering: false, render: (a) => moment(a.date).format('YYYY/MM/DD') },
+                        { title: 'Date', field: 'date', type: 'date',  filtering: false, render: (a) => dateToDateString(a.date) },
                         { title: 'Location', field: 'location', filtering: false },
                         { title: 'Type', field: 'type', lookup:{'DEP': 'Departure', 'ARR': 'Arrival'} }
                     ]}
@@ -56,9 +56,7 @@ export function TravelChecksList(props) {
                     onRowAdd: newData =>
                         new Promise((resolve) => {
                         setTimeout(() => {
-                            {
                                 props.updateTravelChecks(props.travelChecks.concat(newData));
-                            }
                             resolve();
                         }, 1000);
                     }),

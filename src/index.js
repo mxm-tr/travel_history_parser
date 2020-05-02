@@ -20,7 +20,7 @@ import { DateWindow } from './date_window.js'
 import { TravelsTimeline } from './timeline.js'
 import { TravelChecksList } from './travel_checks.js'
 import { InputFormDialog } from './input_form_dialog.js'
-import { sortTravelChecks, processRawInput, computeTravelDurationDays, sumTravelDaysInside, sumTravelDaysOutside, travelChecksToTravelsList } from './utils.js';
+import { sortTravelChecks, processRawInput, computeTravelDurationDays, sumTravelDaysInside, travelChecksToTravelsList } from './utils.js';
 import { Result, ParsingErrors } from './result.js'
 
 const processingFunctionInfos={
@@ -44,23 +44,23 @@ class App extends React.Component {
             travelChecks: [],
             // travelChecks: [{
             //     "location": "RRA",
-            //     "type": "DEP",
-            //     "date": "2017/03/30",
+            //     "type": "ARR",
+            //     "date": "2017-03-30",
             // },
             // {
             //     "location": "BWI",
             //     "type": "DEP",
-            //     "date": "2017/03/31",
+            //     "date": "2017-03-31",
             // },
             // {
             //     "location": "DLA",
             //     "type": "ARR",
-            //     "date": "2017/05/30",
+            //     "date": "2017-05-30",
             // },
             // {
             //     "location": "DUL",
             //     "type": "DEP",
-            //     "date": "2017/06/30",
+            //     "date": "2017-06-30",
             // }],
             newRawInput: 'poop',
             processingFunction: 'i94',
@@ -188,7 +188,7 @@ class App extends React.Component {
             <Grid container item xs={12} spacing={3} direction="row" alignItems="center" justify="space-between">
                 <Grid item>
                     <Typography  component="h1" variant="h6" color="inherit" noWrap>
-                    ✈️ US Travel History Calculator
+                    <span role="img" aria-label="airplane">✈️</span> US Travel History Calculator
                     </Typography>
                 </Grid>
                 <Grid item>
@@ -228,7 +228,7 @@ class App extends React.Component {
                         dateWindowStart={this.state.dateWindowStart}
                         dateWindowStop={this.state.dateWindowStop}
                         totalDaysInside={sumTravelDaysInside(this.computeTravels())}
-                        totalDaysOutside={sumTravelDaysOutside(this.computeTravels())}
+                        totalDaysOutside={computeTravelDurationDays(this.state.dateWindowStart, this.state.dateWindowStop) - sumTravelDaysInside(this.computeTravels())}
                         totalDaysWindow={computeTravelDurationDays(this.state.dateWindowStart, this.state.dateWindowStop)}
                         totalErrors={ this.state.travelsParserErrors === undefined ? 0 : this.state.travelsParserErrors.length  } />
                 </Grid>
