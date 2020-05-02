@@ -1,8 +1,60 @@
 import { travelTypes } from "../utils";
+import moment from "moment";
 
 test('dummy', () => {
     expect(0).toBe(0);
   });
+
+  export const invalidTabularRawInput = `
+  Date	Location	Type
+  Thu Mar 30 2017 00:00:00 GMT-0400	Unavailable	rrival
+  Wed Oct 09 2019 00:00:00 GMT-0400	WAS	Departure$
+  
+  `
+  
+  export const validTabularRawInput = `
+  Date	Location	Type
+  Wed Oct 09 2019 00:00:00 GMT-0400	WAS	Departure
+  Thu Mar 30 2017 00:00:00 GMT-0400	Unavailable	Arrival
+ `     
+
+export const invalidI94RawInput = `
+Fri Apr 13 2018 00:00:00 GMT-0400	WAS	Deprture
+Wed Apr 25 2018 00:00:00 GMT-0400	DBL	Arr
+`
+
+export const validI94RawInput = `
+Date
+	
+Type
+	
+Location
+1 	
+2019-10-09
+	
+Departure
+	
+WAS
+10 	
+2017-03-30
+	
+Arrival
+	
+Unavailable
+`
+
+export const validParsedInput = [
+    {
+        "date": "2017-03-30",
+        "location": "Unavailable",
+        "type": "ARR"
+    },
+    {
+        "date": "2019-10-09",
+        "location": "WAS",
+        "type": "DEP"
+    }
+]
 
 export const validTravelChecksUnordered = [
     {

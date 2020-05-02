@@ -22,22 +22,64 @@ export function sumTravelDaysInside(travelsList){
      return selectedTravels.map((t) => t['durationDateWindow']).reduce((a,b) => a + b, 0)
 }
 
-export function processRawInput(rawInput, processingFunction='i94'){
+export function processRawInput(rawInput, processingFunction){
+    let results = []
+    let parsedOutput = []
+
     switch(processingFunction){
         case 'i94':
-            var parsedOutput = rawInput.match(/((\S+){3})/g).slice(3);
-            var items = []
+            parsedOutput = rawInput.match(/((\S+){3})/g);
+
+            // Remove unwanted keywords if any
+            parsedOutput.splice(parsedOutput.indexOf("Date"), 1)
+            parsedOutput.splice(parsedOutput.indexOf("Type"), 1)
+            parsedOutput.splice(parsedOutput.indexOf("Location"), 1)
+
+            function departureOrArrivalI94(s){
+                return s === 'Departure' ? 'DEP' : (s === 'Arrival' ? 'ARR' : null)
+            }
             while (parsedOutput.length > 0) {
-                items.push({
+                results.push({
                     location: parsedOutput.pop(),
-                    type: parsedOutput.pop() === 'Departure' ? 'DEP' : 'ARR',
-                    date: new moment(parsedOutput.pop())
+                    type: departureOrArrivalI94(parsedOutput.pop()),
+                    date: parsedOutput.pop()
                 });
             }
-            return items
+        break;
+        case 'tabular':
+            parsedOutput = rawInput.match(/[\S ]+/g).map((a) => a.trim()).filter((a) => a.length > 0);
+
+            // Remove unwanted keywords if any
+            parsedOutput.splice(parsedOutput.indexOf("Date"), 1)
+            parsedOutput.splice(parsedOutput.indexOf("Type"), 1)
+            parsedOutput.splice(parsedOutput.indexOf("Location"), 1)
+
+            function departureOrArrivalTabular(s){
+                return s === 'Departure' ? 'DEP' : (s === 'Arrival' ? 'ARR' : null)
+            }
+            while (parsedOutput.length > 0) {
+                results.push({
+                    type: departureOrArrivalTabular(parsedOutput.pop()),
+                    location: parsedOutput.pop(),
+                    date: parsedOutput.pop(),
+                });
+            }
+        break;
         default:
-            return []
+            console.error('No processing function found.')
     }
+
+    // Filter and only keep valid items
+    results = results.filter( (tc) => (tc["type"] === 'DEP' || tc["type"] === 'ARR') & moment(tc["date"]).isValid() )
+
+    // Format the dates
+    return results.map((tc) => {
+        return {
+            date: dateToDateString(moment(tc["date"])),
+            location: tc["location"],
+            type: tc["type"]
+        }
+    })
 }
 
 export function dateStringToDate(dateStr){

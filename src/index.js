@@ -22,12 +22,13 @@ import { TravelChecksList } from './travel_checks.js'
 import { InputFormDialog } from './input_form_dialog.js'
 import { sortTravelChecks, processRawInput, computeTravelDurationDays, sumTravelDaysInside, travelChecksToTravelsList } from './utils.js';
 import { Result, ParsingErrors } from './result.js'
+import { HowToUse } from './tooltips.js';
 
 const processingFunctionInfos={
     "i94": <span> Copy and paste data from the table on the
             <a href="https://i94.cbp.dhs.gov/I94/#/history-search"> official i94 website </a>
         </span>,
-    "tabular": <span> Copy and paste data from an Excel table </span>
+    "tabular": <span> Copy and paste data from a CSV table you have exported using this tool </span>
 }
 
 class App extends React.Component {
@@ -86,7 +87,7 @@ class App extends React.Component {
 
     handleProcessNewRawInput(event){
         this.setState({showImportingDataMessage:true})
-        const newTravelChecks = processRawInput(this.state.newRawInput)
+        const newTravelChecks = processRawInput(this.state.newRawInput, this.state.processingFunction)
         if (newTravelChecks.length > 0){
             this.setState({
                 newTravelChecksCount: newTravelChecks.length,
@@ -117,6 +118,10 @@ class App extends React.Component {
 
     updateTravelChecks(newTravelChecks){
         // Updates the travel checks list, and the date window pickers' defaults values
+        if (newTravelChecks.length < 1){
+            return
+        }
+        
         const newTravelChecksSorted = sortTravelChecks(newTravelChecks)
         this.setState(
                 {
@@ -160,8 +165,8 @@ class App extends React.Component {
             <Snackbar open={this.state.showDataImportedMessage} onClose={ () => this.setState({showDataImportedMessage:false}) } autoHideDuration={2000} >
                 <Alert color='success'>{this.state.newTravelChecksCount} new lines imported !</Alert>
             </Snackbar>
-            <Snackbar open={this.state.showNoDataImportedMessage} onClose={ () => this.setState({showNoDataImportedMessage:false}) } autoHideDuration={2000} >
-                <Alert color='error'>No data imported</Alert>
+            <Snackbar open={this.state.showNoDataImportedMessage} onClose={ () => this.setState({showNoDataImportedMessage:false}) } autoHideDuration={5000} >
+                <Alert color='error'>No data imported, check your input and make sure you selected the right processing function.</Alert>
             </Snackbar>
 
             <Dialog onClose={() => this.setState({showClearAllDialog: false})} aria-labelledby="simple-dialog-title" open={this.state.showClearAllDialog}>
@@ -185,10 +190,10 @@ class App extends React.Component {
                 handleProcessingFunctionChange={this.handleProcessingFunctionChange} />
             
             <Grid container item xs={10} spacing={3} direction="row" alignItems="center" justify="center">
-            <Grid container item xs={12} spacing={3} direction="row" alignItems="center" justify="space-between">
-                <Grid item>
-                    <Typography  component="h1" variant="h6" color="inherit" noWrap>
-                    <span role="img" aria-label="airplane">✈️</span> US Travel History Calculator
+            <Grid container item xs={12} ver spacing={0} direction="row" alignItems="center" justify="space-between">
+                <Grid item xs={6}>
+                    <Typography  component="h4" variant="h5" color="inherit" noWrap>
+                        <span role="img" aria-label="airplane">✈️</span> US Travel History Calculator
                     </Typography>
                 </Grid>
                 <Grid item>
@@ -212,12 +217,17 @@ class App extends React.Component {
                     </Button>
                 </Grid>
             </Grid>
-            <Grid container item spacing={3} justify="space-between" alignItems="center">
-                <Grid container item xs={7} direction="column">
+            <Grid container item spacing={3} justify="center" alignItems="flex-start">
+                <Grid container item xs={7} direction="column" spacing={2}>
+                    <HowToUse />
                     <TravelChecksList travelChecks={ this.state.travelChecks } updateTravelChecks={this.updateTravelChecks} />
                     <ParsingErrors errors={this.state.travelsParserErrors} />
-                </Grid>
-                <Grid container item xs={5} direction="column" spacing={3}>
+                    <TravelsTimeline travels={this.computeTravels()}
+                        travelChecks={this.state.travelChecks}
+                        dateWindowStart={this.state.dateWindowStart}
+                        dateWindowStop={this.state.dateWindowStop}
+                    />                </Grid>
+                <Grid container item xs={5} direction="column" spacing={2}>
                     <DateWindow
                         dateWindowStart={this.state.dateWindowStart}
                         dateWindowStop={this.state.dateWindowStop}
@@ -232,8 +242,6 @@ class App extends React.Component {
                         totalDaysWindow={computeTravelDurationDays(this.state.dateWindowStart, this.state.dateWindowStop)}
                         totalErrors={ this.state.travelsParserErrors === undefined ? 0 : this.state.travelsParserErrors.length  } />
                 </Grid>
-                <TravelsTimeline travels={this.computeTravels()}
-                    travelChecks={this.state.travelChecks} dateWindowStart={this.state.dateWindowStart} dateWindowStop={this.state.dateWindowStop}/>
             </Grid>
         </Grid>
     </Grid>

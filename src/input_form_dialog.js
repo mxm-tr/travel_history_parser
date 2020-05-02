@@ -17,7 +17,6 @@ export class InputFormDialog extends React.PureComponent {
             <Dialog open={this.props.showModal} onClose={this.props.hideModalHandler} aria-labelledby="form-dialog-title">
             <DialogTitle id="form-dialog-title">Import raw data</DialogTitle>
             <DialogContent>
-            <form onSubmit={this.props.handleProcessNewRawInput} >
             <Grid container>
                 <Grid item xs={12}>
                     <Typography component="p" color="textSecondary">
@@ -56,14 +55,13 @@ export class InputFormDialog extends React.PureComponent {
                     </Typography>
                     </Grid>
                     <Grid item>
-                        <Button type='submit' onClick={this.props.hideModalHandler}
+                        <Button onClick={ (e) => { this.props.hideModalHandler(); this.props.handleProcessNewRawInput(e); } }
                             variant="contained"
                             color="primary"
                             size="large">Import</Button>
                     </Grid>
                     </Grid>
                 </Grid>
-                </form>
             </DialogContent>
             <DialogActions>
             </DialogActions>

@@ -1,26 +1,45 @@
 
 import {
     sortTravelChecks,
-    travelTypes,
     computeTravelDurationDays,
     travelChecksToTravelsList,
     sumTravelDaysInside,
+    processRawInput,
 } from "../utils.js";
 
 import { validTravelChecksUnordered,
     validTravelChecksOrdered,
-    validTotalDaysCountNoTimeWindow, 
     validTravelsNoTimeWindow,
-    testTravelsTimeWindows
+    testTravelsTimeWindows,
+    validParsedInput,
+    validI94RawInput,
+    invalidI94RawInput,
+    validTabularRawInput,
+    invalidTabularRawInput
 } from "./test_data.js";
 
-import { moment } from 'moment';
+
+test('Travel history parsing function', () => {
+    expect(
+        processRawInput(validI94RawInput, 'i94')
+    ).toStrictEqual(validParsedInput);
+    expect(
+        processRawInput(invalidI94RawInput, 'i94')
+    ).toStrictEqual([]);
+    expect(
+        processRawInput(validTabularRawInput, 'tabular')
+    ).toStrictEqual(validParsedInput);
+    expect(
+        processRawInput(invalidTabularRawInput, 'tabular')
+    ).toStrictEqual([]);
+});
+
 
 test('Travel ordering function', () => {
     expect(sortTravelChecks(
         validTravelChecksUnordered
     )).toStrictEqual(validTravelChecksOrdered);
-  });
+});
 
 
 test('Time difference function', () => {

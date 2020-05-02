@@ -62,7 +62,7 @@ export class DateWindow extends React.Component {
           <AppBar position="static">
             <Toolbar>
               <Typography variant="h6" className={classes.title}>
-                Select counting period
+              <span role="img" aria-label="tooltip-calendar-title">📅</span> Select counting period
               </Typography>
             </Toolbar>
               <Tabs value={this.state.tabValue} onChange={this.handleTabChange} aria-label="Counting period">

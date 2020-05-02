@@ -104,13 +104,12 @@ class TravelsTimeline extends React.PureComponent {
         //         })
         //     ]        
         // )
-        console.log(this.props.travels.concat(travelChecksPoints).concat(timeWindowBackground))
         return (
         <Grid item xs={12}>
             <AppBar position="static">
             <Toolbar>
               <Typography variant="h6" className={classes.title}>
-                Timeline
+                <span role="img" aria-label="tooltip-graph-title">📊</span> Timeline
               </Typography>
             </Toolbar>
             </AppBar>

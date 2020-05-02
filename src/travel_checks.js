@@ -8,6 +8,8 @@ import Card from '@material-ui/core/Card';
 import './travel_checks.css'
 import { dateToDateString } from './utils.js';
 
+import './travel_checks.css'
+
 const useStyles = makeStyles({
     blueBackground: {
         background: 'linear-gradient(45deg, #3f51b5 30%, #3f51b5 90%)',
@@ -39,7 +41,7 @@ export function TravelChecksList(props) {
                         { title: 'Type', field: 'type', lookup:{'DEP': 'Departure', 'ARR': 'Arrival'} }
                     ]}
                 data={props.travelChecks}
-                title="Travel checks list"
+                title="🖋️ Travel checks list"
                 style = {{classes}}
                 options={{
                     search: false,

@@ -23,14 +23,7 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
 
-import moment from 'moment'
 import { makeStyles } from '@material-ui/styles';
 import { dateToDateString } from './utils';
 
@@ -109,28 +102,11 @@ export function ParsingErrors(props) {
 }
 
 export function Result(props) {
-  const [open, setOpen] = React.useState(false);
-  const [, setScroll] = React.useState('paper');
-
-  const handleClickOpen = (scrollType) => () => {
-    setOpen(true);
-    setScroll(scrollType);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   const classes = useStyles(props);
   let content = 
   <CardContent>
     <TableContainer component={Paper}>
       <Table className={classes.table} aria-label="simple table">
-      <caption>
-        <Button align="center" size="small"  color="primary" variant="contained" onClick={handleClickOpen('paper')}>
-          More information
-        </Button>
-      </caption>
         <TableBody>
             <TableRow key="inside-count">
               <TableCell component="th" scope="row">
@@ -167,7 +143,6 @@ export function Result(props) {
         </TableBody>
       </Table>
     </TableContainer>
-    <InfoDialog handleClickOpen={handleClickOpen} handleClose={handleClose} open={open} />
   </CardContent>
 
   if (props.totalErrors > 0){
@@ -185,7 +160,7 @@ export function Result(props) {
       <AppBar position="static">
           <Toolbar>
             <Typography variant="h6" className={classes.title}>
-              Results
+              <span role="img" aria-label="tooltip-calc-title">🧮</span> Results
             </Typography>
           </Toolbar>
       </AppBar>
@@ -195,77 +170,4 @@ export function Result(props) {
   </Box>
   </Grid>
   )
-}
-
-export function InfoDialog(props) {
-  const descriptionElementRef = React.useRef(null);
-  React.useEffect(() => {
-    if (props.open) {
-      const { current: descriptionElement } = descriptionElementRef;
-      if (descriptionElement !== null) {
-        descriptionElement.focus();
-      }
-    }
-  }, [props.open]);
-
-  return (
-    <div>
-      <Dialog
-        open={props.open}
-        onClose={props.handleClose}
-        scroll={props.scroll}
-        aria-labelledby="scroll-dialog-title"
-        aria-describedby="scroll-dialog-description"
-      >
-        <DialogTitle id="scroll-dialog-title">Additional Information</DialogTitle>
-        <DialogContent dividers={props.scroll === 'paper'}>
-          <DialogContentText
-            id="scroll-dialog-description"
-            ref={descriptionElementRef}
-            tabIndex={-1}
-          >
-            <Typography variant="h6" color="textPrimary">
-              How does it work?
-            </Typography>
-              <Typography variant="p">
-              In most cases the US immigration counts the travel days as days <b>inside the US</b>.
-              <br />
-              <br />
-
-              <b>Example:</b>
-              <br />
-              Given a trip abroad from April 1st to April 3rd, two days will be counted as Inside the US, and 1 day Outside.
-              <br />
-              <br />
-              </Typography>
-            <Typography variant="h6" color="textPrimary">
-              Simple example with one trip:
-            </Typography>
-            <Typography variant="p">
-              Let's say you want to count your travel days in <b>2017</b>. The only trip you had
-              was in Mexico on April 1st 2017, and you came back April 5th 2017. <br /> <br />
-              This shows up in your I94 with the following travel checks: <br /> {
-                renderTravelCheck({date: moment('2017-04-01'),
-                location: 'MIA', type: 'DEP'})
-              }(Departure) and {
-                renderTravelCheck({date: moment('2017-04-05'),
-                location: 'MIA', type: 'ARR'})
-              } (Arrival)
-              <br /><br />
-              The total count of days outside the US in 2017 is 3 days: <b>you were traveling</b> for 2 days <b>and outside</b> the US for 3 days. 
-              <br />
-              The total count of days inside the US in 2017 is 362 days: <b>you were traveling</b> for 2 days <b>and inside</b> the US during 360 days.
-              <br />
-              You may check your result with 3 + 362 = 365, there are 365 days in 2017.
-            </Typography>
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={props.handleClose} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
-  );
 }
