@@ -13,10 +13,11 @@
     "date-fns": "^2.11.1",
     "material-table": "^1.57.2",
     "material-ui": "^0.20.2",
+    "moment": "^2.24.0",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-join": "^1.1.4",
-    "react-scripts": "3.4.0",
+    "react-scripts": "^3.4.1",
     "react-visjs-timeline": "^1.6.0",
     "typescript": "^3.8.3",
     "uuid": "^7.0.2",
@@ -27,8 +28,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
     "test": "react-scripts test",
+    "build": "react-scripts build",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
