@@ -25,10 +25,13 @@ jobs:
     - name: Setup Node.js environment
       uses: actions/setup-node@v1.4.2
 
-    - name: NPM Tests
-      uses: anna-money/github-actions-npm@v1
+    - name: Install
+      run: npm install
+
+    - name: Unit Tests
+      run: npm test -- --watchAll=false
  
-    - name: GitHub Pages
+    - name: Deploy to GitHub Pages
       uses: crazy-max/ghaction-github-pages@v1.4.1
       with:
         build_dir: build
