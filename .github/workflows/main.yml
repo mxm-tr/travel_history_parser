@@ -36,3 +36,5 @@ jobs:
       with:
         build_dir: build
         committer_name: auto-deploy
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
