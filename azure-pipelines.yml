@@ -18,6 +18,6 @@ steps:
 - script: |
     npm install
     npm test -- --watchAll=false
-    npm run build
+    npm install --only=dev
     npm deploy
   displayName: 'npm install, test, build and deploy'
