@@ -154,7 +154,18 @@ class App extends React.Component {
     hideModalHandler = () =>{
         this.setState({showModal:false});
     }
+    componentDidMount() {
+        window.addEventListener('beforeunload', this.handleLeavePage);
+    }
 
+    componentWillUnmount() {
+        window.removeEventListener('beforeunload', this.handleLeavePage);
+    }
+    handleLeavePage(e) {
+        const confirmationMessage = 'Do you want to leave this page? You will lose all current data.';
+        e.returnValue = confirmationMessage;     // Gecko, Trident, Chrome 34+
+        return confirmationMessage;              // Gecko, WebKit, Chrome <34
+    }
     render() {
       return (
         <MuiThemeProvider>
@@ -190,7 +201,7 @@ class App extends React.Component {
                 handleProcessingFunctionChange={this.handleProcessingFunctionChange} />
             
             <Grid container item xs={10} spacing={3} direction="row" alignItems="center" justify="center">
-            <Grid container item xs={12} ver spacing={0} direction="row" alignItems="center" justify="space-between">
+            <Grid container item xs={12} spacing={0} direction="row" alignItems="center" justify="space-between">
                 <Grid item xs={6}>
                     <Typography  component="h4" variant="h5" color="inherit" noWrap>
                         <span role="img" aria-label="airplane">✈️</span> US Travel History Calculator
