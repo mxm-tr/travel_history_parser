@@ -26,7 +26,7 @@ import { HowToUse } from './tooltips.js';
 
 const processingFunctionInfos={
     "i94": <span> Copy and paste data from the table on the
-            <a href="https://i94.cbp.dhs.gov/I94/#/history-search"> official i94 website </a>
+            <a href="https://i94.cbp.dhs.gov/I94/#/history-search" target="_blank" rel="noopener noreferrer"> official i94 website </a>
         </span>,
     "tabular": <span> Copy and paste data from a CSV table you have exported using this tool </span>
 }
