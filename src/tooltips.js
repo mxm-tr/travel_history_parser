@@ -137,7 +137,7 @@ export function InfoDialog(props) {
                 Something does not work!
               </Typography>
                 <Typography variant="p">
-                    You are more than welcome to report any issue on the <a href="https://github.com/mxm-tr/travel_history_parser">github account of the app</a>.
+                    You are more than welcome to report any issue on the <a href="https://github.com/mxm-tr/travel_history_parser" rel="noopener noreferrer" target="_blank">github account of the app</a>.
                 <br />
                 </Typography>
             </DialogContentText>
