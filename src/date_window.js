@@ -48,6 +48,21 @@ export class DateWindow extends React.Component {
   };
   handleTabChange(event, newValue){
     this.setState({ tabValue: newValue })
+
+    // According to the tab we change to, update the selected window
+    switch (newValue) {
+      case 0: //Selected tab: custom dates
+        this.props.handleWindowStartChange(this.props.dateWindowStart)
+        this.props.handleWindowStopChange(this.props.dateWindowStop)
+        break;
+      case 1: //Selected tab: full year dates
+        this.selectYear(moment(this.props.dateWindowStart)._d)
+        break;
+      case 2: //Selected tab: whole travel interval
+        break;
+      default:
+        break;
+    }
   }
   selectYear(newDate){
     this.props.handleWindowStartChange(moment(new Date("01/01/" + newDate.getFullYear())));
