@@ -145,13 +145,15 @@ export function Result(props) {
     </TableContainer>
   </CardContent>
 
-  if (props.totalErrors > 0){
-    content = 
-    <CardContent>
-      <Typography className={classes.title} color="textSecondary" gutterBottom>
-          Unable to calculate a result, please fix the { props.totalErrors } errors and try again.
-      </Typography>
-    </CardContent>
+  if (props.errors !== undefined) {
+    if (props.errors.length > 0){
+      content = 
+      <CardContent>
+        <Typography className={classes.title} color="textSecondary" gutterBottom>
+            Unable to calculate a result, please fix the { props.totalErrors } errors and try again.
+        </Typography>
+      </CardContent>
+    }
   }
 
   return (

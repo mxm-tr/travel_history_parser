@@ -130,13 +130,15 @@ class App extends React.Component {
                     travelChecks: newTravelChecksSorted
                 }
             )
-        this.updateTravels()
     }
     computeTravelsWithMessage(){
        return travelChecksToTravelsList(this.state.travelChecks, this.state.dateWindowStart, this.state.dateWindowStop)
     }
     computeTravels(){
         return this.computeTravelsWithMessage()['travels']
+    }
+    computeTravelsMessage(){
+        return this.computeTravelsWithMessage()['errors']
     }
     updateTravels(){
         const travelsComputeResult = this.computeTravelsWithMessage()
@@ -169,7 +171,7 @@ class App extends React.Component {
     render() {
       return (
         <MuiThemeProvider>
-        <Grid container justify="center" alignItems="center">
+        <Grid container justify="center" alignItems="center" >
             <Snackbar open={this.state.showImportingDataMessage} onClose={ () => this.setState({showImportingDataMessage:false}) } autoHideDuration={2000} >
                 <Alert color='info'>Importing Data</Alert>
             </Snackbar>
@@ -183,7 +185,7 @@ class App extends React.Component {
             <Dialog onClose={() => this.setState({showClearAllDialog: false})} aria-labelledby="simple-dialog-title" open={this.state.showClearAllDialog}>
             <DialogTitle id="simple-dialog-title">Clear all data</DialogTitle>
             <DialogActions>
-            <Button onClick={() => this.setState({travelChecks: [], showClearAllDialog: false})} color="primary">
+            <Button onClick={() => this.setState({travelChecks: [], travels: [], showClearAllDialog: false})} color="primary">
                 Delete all
             </Button>
             <Button onClick={() => this.setState({showClearAllDialog: false})} color="primary" autoFocus>
@@ -200,45 +202,42 @@ class App extends React.Component {
                 processingFunctionInfo={processingFunctionInfos[this.state.processingFunction]}
                 handleProcessingFunctionChange={this.handleProcessingFunctionChange} />
             
-            <Grid container item xs={10} spacing={3} direction="row" alignItems="center" justify="center">
-            <Grid container item xs={12} spacing={0} direction="row" alignItems="center" justify="space-between">
-                <Grid item xs={6}>
-                    <Typography  component="h4" variant="h5" color="inherit" noWrap>
-                        <span role="img" aria-label="airplane">✈️</span> US Travel History Calculator
-                    </Typography>
-                </Grid>
-                <Grid item>
-                <Button
-                        onClick={this.showModalHandler}
-                        variant="contained"
-                        color="primary"
-                        size="large"
-                        startIcon={<AddBox />}>
-                            Import Data
-                    </Button>
-                </Grid>
-                <Grid item>
-                    <Button 
-                        onClick={() => this.setState({showClearAllDialog: true})}
-                        variant="contained"
-                        color="secondary"
-                        size="large"
-                        startIcon={<DeleteOutline />}>
-                            Clear All Data
-                    </Button>
-                </Grid>
-            </Grid>
+            <Grid container item xs={11} spacing={3} direction="row" alignItems="center" justify="center" style={{marginTop: 10, marginBottom: 10}}>
+            
             <Grid container item spacing={3} justify="center" alignItems="flex-start">
                 <Grid container item xs={7} direction="column" spacing={2}>
+                    <Grid item xs={12}>
+                        <Typography  component="h4" variant="h5" color="inherit" noWrap>
+                            <span role="img" aria-label="airplane">✈️</span> US Travel History Calculator
+                        </Typography>
+                    </Grid>
                     <HowToUse />
                     <TravelChecksList travelChecks={ this.state.travelChecks } updateTravelChecks={this.updateTravelChecks} />
-                    <ParsingErrors errors={this.state.travelsParserErrors} />
-                    <TravelsTimeline travels={this.computeTravels()}
-                        travelChecks={this.state.travelChecks}
-                        dateWindowStart={this.state.dateWindowStart}
-                        dateWindowStop={this.state.dateWindowStop}
-                    />                </Grid>
+                    <ParsingErrors errors={this.computeTravelsMessage()} />
+                </Grid>
                 <Grid container item xs={5} direction="column" spacing={2}>
+                    <Grid item container xs={12} justify="space-between" alignItems="center">
+                        <Grid item>
+                            <Button
+                                    onClick={this.showModalHandler}
+                                    variant="contained"
+                                    color="primary"
+                                    size="large"
+                                    startIcon={<AddBox />}>
+                                        Import Data
+                                </Button>
+                        </Grid>
+                        <Grid item>
+                            <Button 
+                                onClick={() => this.setState({showClearAllDialog: true})}
+                                variant="contained"
+                                color="secondary"
+                                size="large"
+                                startIcon={<DeleteOutline />}>
+                                    Clear All Data
+                            </Button>
+                        </Grid>
+                    </Grid>
                     <DateWindow
                         dateWindowStart={this.state.dateWindowStart}
                         dateWindowStop={this.state.dateWindowStop}
@@ -251,8 +250,15 @@ class App extends React.Component {
                         totalDaysInside={sumTravelDaysInside(this.computeTravels())}
                         totalDaysOutside={computeTravelDurationDays(this.state.dateWindowStart, this.state.dateWindowStop) - sumTravelDaysInside(this.computeTravels())}
                         totalDaysWindow={computeTravelDurationDays(this.state.dateWindowStart, this.state.dateWindowStop)}
-                        totalErrors={ this.state.travelsParserErrors === undefined ? 0 : this.state.travelsParserErrors.length  } />
+                        errors={ this.computeTravelsMessage() } />
                 </Grid>
+            </Grid>
+            <Grid item xs={12}>
+                <TravelsTimeline travels={this.computeTravels()}
+                        travelChecks={this.state.travelChecks}
+                        dateWindowStart={this.state.dateWindowStart}
+                        dateWindowStop={this.state.dateWindowStop}
+                />
             </Grid>
         </Grid>
     </Grid>
