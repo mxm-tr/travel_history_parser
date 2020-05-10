@@ -46,6 +46,7 @@ export function TravelChecksList(props) {
                 options={{
                     search: false,
                     exportButton: true,
+                    exportAllData: true,
                     searchFieldStyle: {
                       backgroundColor: '#01579b',
                       color: '#FFF'
