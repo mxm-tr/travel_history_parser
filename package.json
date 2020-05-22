@@ -11,6 +11,7 @@
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
     "date-fns": "^2.11.1",
+    "file-saver": "^2.0.2",
     "material-table": "^1.57.2",
     "material-ui": "^0.20.2",
     "moment": "^2.24.0",
@@ -24,7 +25,8 @@
     "vis": "^4.21.0-EOL",
     "vis-data": "^6.5.1",
     "vis-timeline": "^7.3.4",
-    "vis-util": "^4.0.0"
+    "vis-util": "^4.0.0",
+    "xlsx": "^0.16.1"
   },
   "scripts": {
     "start": "react-scripts start",

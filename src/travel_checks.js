@@ -6,7 +6,7 @@ import MaterialTable from 'material-table';
 import Card from '@material-ui/core/Card';
 
 import './travel_checks.css'
-import { dateToDateString } from './utils.js';
+import { dateToDateString, exportXls } from './utils.js';
 
 import './travel_checks.css'
 
@@ -47,14 +47,14 @@ export function TravelChecksList(props) {
                     search: false,
                     exportButton: true,
                     exportAllData: true,
+                    exportCsv: exportXls,
+                    localization: { exportName: 'Export as Excel File' },
                     searchFieldStyle: {
                       backgroundColor: '#01579b',
                       color: '#FFF'
                     },
                     rowStyle: rowData => ( { backgroundColor: (rowData.tableData.id % 2) ? '#EEE' : '#FFF' } )
                 }}
-                // localization={{ dateTimePickerLocalization: 'en_US' }}
-                // options={{searchFieldAlignment: 'left', filtering: true}}
                 editable={{
                     onRowAdd: newData =>
                         new Promise((resolve) => {

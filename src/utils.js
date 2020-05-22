@@ -1,4 +1,6 @@
 import moment from 'moment';
+import XLSX from 'xlsx';
+import FileSaver from 'file-saver';
 
 export const travelTypes = {
     'Outside': 2,
@@ -48,18 +50,16 @@ export function processRawInput(rawInput, processingFunction){
         break;
         case 'tabular':
             parsedOutput = rawInput.match(/[\S ]+/g).map((a) => a.trim()).filter((a) => a.length > 0);
-
             // Remove unwanted keywords if any
-            parsedOutput.splice(parsedOutput.indexOf("Date"), 1)
-            parsedOutput.splice(parsedOutput.indexOf("Type"), 1)
-            parsedOutput.splice(parsedOutput.indexOf("Location"), 1)
+            parsedOutput.splice(parsedOutput.indexOf("date"), 1)
+            parsedOutput.splice(parsedOutput.indexOf("type"), 1)
+            parsedOutput.splice(parsedOutput.indexOf("location"), 1)
+            parsedOutput.splice(parsedOutput.indexOf("tableData"), 1)
+            console.log(parsedOutput);
 
-            function departureOrArrivalTabular(s){
-                return s === 'Departure' ? 'DEP' : (s === 'Arrival' ? 'ARR' : null)
-            }
             while (parsedOutput.length > 0) {
                 results.push({
-                    type: departureOrArrivalTabular(parsedOutput.pop()),
+                    type: parsedOutput.pop(),
                     location: parsedOutput.pop(),
                     date: parsedOutput.pop(),
                 });
@@ -70,6 +70,7 @@ export function processRawInput(rawInput, processingFunction){
     }
 
     // Filter and only keep valid items
+    console.log(results.map( (tc) => moment(tc["date"], 'YYYY-MM-DD').isValid() ? 'ok' : tc["date"]  ));
     results = results.filter( (tc) => (tc["type"] === 'DEP' || tc["type"] === 'ARR') & moment(tc["date"]).isValid() )
 
     // Format the dates
@@ -190,4 +191,17 @@ export function travelChecksToTravelsList(travelChecks, dateWindowStart, dateWin
 
     return {travels: travels, errors: errors}
 
+}
+
+export function exportXls(columns, csvData){
+    // Used here:
+    // https://github.com/mbrn/material-table/blob/3499b134c2b2ac08b54cfec4fe6bc406108beac1/src/components/m-table-toolbar.js#L50
+    const fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+    const fileName = 'dataExport';
+    const fileExtension = '.xlsx';
+    const ws = XLSX.utils.json_to_sheet(csvData);
+    const wb = { Sheets: { 'data': ws }, SheetNames: ['data'] };
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], {type: fileType});
+    FileSaver.saveAs(data, fileName + fileExtension);
 }
