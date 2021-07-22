@@ -26,7 +26,7 @@
     "vis-data": "^6.5.1",
     "vis-timeline": "^7.3.4",
     "vis-util": "^4.0.0",
-    "xlsx": "^0.16.1"
+    "xlsx": "^0.17.0"
   },
   "scripts": {
     "start": "react-scripts start",
