@@ -14,7 +14,7 @@
     "file-saver": "^2.0.2",
     "material-table": "^1.57.2",
     "material-ui": "^0.20.2",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-join": "^1.1.4",
